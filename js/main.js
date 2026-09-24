@@ -177,7 +177,7 @@
       '<li>ジェム <b>' + run.gems + '</b></li>' +
       '<li>最大コンボ <b>' + run.bestCombo + '</b></li>' +
       '<li>ニアミス <b>' + run.nearMisses + '</b></li>' +
-      '<li>🪙 <b>+' + sum.coins + '</b></li>' +
+      '<li>🪙 <b id="over-coins">+0</b></li>' +
       (sum.levelUps ? '<li>レベルアップ! <b>Lv' + Meta.levelFromXp(save.xp) + '</b></li>' : '');
     const next = Meta.SKINS.filter((s) => save.owned.indexOf(s.id) === -1).sort((a, b) => a.price - b.price)[0];
     $('over-unlock').textContent = !next
@@ -189,8 +189,55 @@
       sum.completed.map((m) => missionHtml(m, true)).join('') + save.missions.map((m) => missionHtml(m, false)).join('');
     show('over');
     retryLockUntil = performance.now() + 600;
+    countUp($('over-coins'), sum.coins);
     if (sum.newBest) Sfx.best();
-    else if (sum.completed.length) Sfx.coin();
+    else if (sum.completed.length || sum.levelUps) Sfx.coin();
+    if (sum.newBest || sum.completed.length) buzz([15, 30, 15]);
+  }
+
+  // Rewards feel bigger when you watch them tick up.
+  function countUp(el, target) {
+    const start = performance.now();
+    const dur = Math.min(900, 200 + target * 12);
+    (function tick(now) {
+      const k = Math.min(1, (now - start) / dur);
+      el.textContent = '+' + Math.round(target * (1 - Math.pow(1 - k, 3)));
+      if (k < 1 && state === 'over') requestAnimationFrame(tick);
+      else el.textContent = '+' + target;
+    })(start);
+  }
+
+  // Sharing a score is how friends find the game: Web Share on mobile, clipboard elsewhere.
+  function shareScore() {
+    const score = Number($('over-score').textContent) || 0;
+    const url = /^https?:/.test(window.location.protocol) ? window.location.origin + window.location.pathname : '';
+    const text = 'ORBIT SWITCH で ' + score + '点！（ベスト ' + save.best + '）タップだけの中毒ゲーム #ORBITSWITCH';
+    const toast = (msg) => {
+      const t = $('share-toast');
+      t.textContent = msg;
+      t.classList.remove('hidden');
+      clearTimeout(toast.timer);
+      toast.timer = setTimeout(() => t.classList.add('hidden'), 1800);
+    };
+    if (navigator.share) {
+      navigator.share({ title: 'ORBIT SWITCH', text, url: url || undefined }).catch(() => {});
+    } else if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url ? text + ' ' + url : text).then(
+        () => toast('コピーしました！'),
+        () => toast('コピーできませんでした')
+      );
+    } else {
+      toast(text);
+    }
+  }
+
+  function buzz(pattern) {
+    if (save.muted || !navigator.vibrate) return;
+    try {
+      navigator.vibrate(pattern);
+    } catch (e) {
+      /* some browsers throw when not triggered by a gesture */
+    }
   }
 
   function onTap() {
@@ -248,6 +295,7 @@
       startGame();
     })
   );
+  $('btn-share').addEventListener('click', shareScore);
   $('btn-home').addEventListener('click', () => {
     renderMenu();
     show('menu');
@@ -300,6 +348,7 @@
         case 'nearMiss':
           Sfx.nearMiss();
           slowMo = 0.12;
+          buzz(8);
           popText(e.x, e.y, 'CLOSE!', '#4df3ff', 20);
           break;
         case 'smash':
@@ -309,6 +358,7 @@
           break;
         case 'fever':
           Sfx.fever();
+          buzz([20, 40, 20]);
           flash = 0.5;
           popText(0, 0, 'FEVER!!', '#ff7ad9', 44);
           break;
@@ -317,6 +367,7 @@
           break;
         case 'death':
           Sfx.death();
+          buzz(80);
           shake = 16;
           flash = 0.6;
           burst(e.x, e.y, skinColor('color'), 40, 0.7);

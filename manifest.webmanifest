@@ -1,0 +1,11 @@
+{
+  "name": "ORBIT SWITCH",
+  "short_name": "ORBIT",
+  "description": "タップだけで遊べる中毒性ワンタップゲーム",
+  "start_url": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#07071a",
+  "theme_color": "#07071a",
+  "icons": [{ "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

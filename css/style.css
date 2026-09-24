@@ -292,8 +292,10 @@ h2 {
 
 @media (prefers-reduced-motion: reduce) {
   .btn.primary,
-  .newbest {
-    animation: none;
+  .newbest,
+  .mission.done,
+  #hud-score.bump {
+    animation: none !important;
   }
 }
 
@@ -358,4 +360,38 @@ h2 {
   color: var(--gold);
   font-size: 14px;
   font-weight: 700;
+}
+
+.btn:focus-visible,
+.skin:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.btn.icon {
+  padding: 12px 14px;
+}
+
+.mission.done {
+  animation: pop 0.45s ease-out both;
+}
+
+@keyframes pop {
+  0% {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.04);
+    opacity: 1;
+  }
+}
+
+#share-toast {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  z-index: 2;
 }

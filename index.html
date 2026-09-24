@@ -5,10 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#07071a" />
     <title>ORBIT SWITCH</title>
+    <meta name="description" content="タップだけで遊べる中毒性ワンタップゲーム。内側と外側のリングを切り替えてトゲをよけ、ジェムを集めてフィーバーを狙え。" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <canvas id="game"></canvas>
+    <canvas id="game" aria-label="ゲーム画面：タップまたはスペースキーでリングを切り替え"></canvas>
 
     <div id="hud" class="hidden">
       <div id="hud-score">0</div>
@@ -40,8 +44,9 @@
     </section>
 
     <section id="over" class="screen hidden">
+      <div id="share-toast" class="toast hidden" role="status"></div>
       <div id="over-newbest" class="newbest hidden">NEW BEST!</div>
-      <div class="over-score" id="over-score">0</div>
+      <div class="over-score" id="over-score" aria-live="polite">0</div>
       <div class="over-best">BEST <b id="over-best">0</b></div>
       <div id="over-tease" class="tease"></div>
       <ul id="over-details" class="details"></ul>
@@ -49,6 +54,7 @@
       <div id="over-missions" class="missions"></div>
       <div class="row">
         <button id="btn-home" class="btn">メニュー</button>
+        <button id="btn-share" class="btn icon" aria-label="スコアを共有">📤</button>
         <button id="btn-retry" class="btn primary">もう一回 ↻</button>
       </div>
     </section>
