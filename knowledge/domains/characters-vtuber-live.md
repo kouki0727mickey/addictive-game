@@ -8,6 +8,8 @@ tags: [ai-character, vtuber, companion, live, fandom]
 
 # キャラクター・VTuber・ライブエンタメ × AI
 
+> 設計パターン・事例・評価の詳細は重点領域 [ai-characters](../ai-characters/README.md) を参照。
+
 ## 一言で言うと
 **「キャラクターと関係を持つ」** 体験は、AIによって初めて「1対多」から「1対1・常時」になった。
 市場ポテンシャルは巨大だが、依存・孤独の利用・未成年保護という最も重い倫理課題を抱える領域でもある。

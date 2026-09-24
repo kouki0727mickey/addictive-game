@@ -26,6 +26,10 @@ knowledge/
 │   ├── tech-stack.md          エンタメで使うAI技術の地図
 │   ├── engagement-design.md   「ハマる」の科学とAI（本リポジトリの核）
 │   └── ai-native-entertainment.md  AIネイティブなエンタメの設計原則
+├── ai-characters/             ★重点領域: AIキャラクター・会話NPC
+│   ├── patterns.md            設計パターン集（38パターン）
+│   ├── case-studies.md        事例分析（11件）
+│   └── evaluation.md          評価フレームワークとリリース判定
 ├── domains/                   領域別
 │   ├── games.md
 │   ├── film-video.md
@@ -37,7 +41,8 @@ knowledge/
 │   └── business-models.md     収益モデル・コスト構造・参入戦略
 ├── ethics-legal/
 │   └── ethics-legal.md        著作権・肖像/声・依存性・透明性
-└── glossary.md                用語集
+├── glossary.md                用語集
+└── _verification-log.md       事実確認ログ
 templates/
 └── knowledge-entry.md         新規記事テンプレート
 ```

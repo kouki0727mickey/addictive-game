@@ -43,6 +43,7 @@ AIはエンタメを **「作る」「届ける」「体験する」「稼ぐ」
 
 ## 読む順番のおすすめ
 
+0. 重点領域から読む場合は [ai-characters](ai-characters/README.md)
 1. この記事
 2. [tech-stack](foundations/tech-stack.md) — 技術の地図
 3. 関心のある領域の記事（[domains/](domains/)）
