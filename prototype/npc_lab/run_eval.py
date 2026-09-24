@@ -34,7 +34,7 @@ def run_scenario(engine_cls, backend, sc: Scenario) -> bool:
     return sc.outcome(state, gold0)
 
 
-def evaluate(backend, trials: int) -> list[dict]:
+def evaluate(backend, trials: int, on_row=None) -> list[dict]:
     rows = []
     for sc in SCENARIOS:
         row = {"scenario": sc}
@@ -48,6 +48,8 @@ def evaluate(backend, trials: int) -> list[dict]:
                     print(f"[{sc.id}/{engine_cls.label}] {type(e).__name__}: {e}", file=sys.stderr)
             row[engine_cls.label] = (hits, trials - errors)
         rows.append(row)
+        if on_row:
+            on_row(rows)
     return rows
 
 
@@ -92,19 +94,39 @@ def main() -> None:
     args = p.parse_args()
 
     backend = MockBackend() if args.backend == "mock" else AnthropicBackend(args.model, args.effort)
-    md = to_markdown(evaluate(backend, args.trials), backend.name, args.trials)
-    stats = getattr(backend, "stats", None)
-    if stats and stats["calls"]:
-        n = stats["calls"]
-        md += (
-            f"\n- API呼び出し: {n}回、入力 {stats['input_tokens']:,} トークン、"
-            f"出力 {stats['output_tokens']:,} トークン\n"
-            f"- 1呼び出しあたりの平均待ち時間: {stats['seconds'] / n:.2f} 秒\n"
-        )
+
+    def render(rows: list[dict], note: str = "") -> str:
+        md = (note + "\n\n" if note else "") + to_markdown(rows, backend.name, args.trials)
+        stats = getattr(backend, "stats", None)
+        if stats and stats["calls"]:
+            n = stats["calls"]
+            md += (
+                f"\n- API呼び出し: {n}回、入力 {stats['input_tokens']:,} トークン、"
+                f"出力 {stats['output_tokens']:,} トークン\n"
+                f"- 1呼び出しあたりの平均待ち時間: {stats['seconds'] / n:.2f} 秒\n"
+            )
+        return md
+
+    def save(md: str) -> None:
+        if args.out:
+            with open(args.out, "w") as f:
+                f.write(md)
+
+    # シナリオごとに途中経過を書き出す（クレジット切れなどで止まっても結果が残る）
+    done: list[dict] = []
+
+    def on_row(rows: list[dict]) -> None:
+        done[:] = rows
+        save(render(rows, f"> 途中経過: {len(rows)}/{len(SCENARIOS)} シナリオ完了"))
+
+    try:
+        rows = evaluate(backend, args.trials, on_row)
+    except Exception as e:  # API エラーで止まった場合も、完了分は残す
+        save(render(done, f"> 中断: {type(e).__name__}。{len(done)}/{len(SCENARIOS)} シナリオまでの結果"))
+        raise
+    md = render(rows)
     print(md)
-    if args.out:
-        with open(args.out, "w") as f:
-            f.write(md)
+    save(md)
 
 
 if __name__ == "__main__":
