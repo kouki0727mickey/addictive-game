@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#07071a" />
+    <title>ORBIT SWITCH</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <canvas id="game"></canvas>
+
+    <div id="hud" class="hidden">
+      <div id="hud-score">0</div>
+      <div id="hud-mult"></div>
+    </div>
+
+    <section id="menu" class="screen">
+      <h1 class="logo">ORBIT<span>SWITCH</span></h1>
+      <p class="tagline">タップで内側⇄外側。トゲをよけてジェムを集めろ。</p>
+      <div class="stats">
+        <div>BEST <b id="menu-best">0</b></div>
+        <div>🪙 <b id="menu-coins">0</b></div>
+        <div>Lv <b id="menu-level">1</b></div>
+      </div>
+      <div class="xpbar"><i id="menu-xp"></i></div>
+      <div id="daily" class="toast hidden"></div>
+      <button id="btn-play" class="btn primary">タップでスタート</button>
+      <div class="row">
+        <button id="btn-shop" class="btn">スキン</button>
+        <button id="btn-missions" class="btn">ミッション</button>
+        <button id="btn-mute" class="btn icon" aria-label="サウンド切替">🔊</button>
+      </div>
+    </section>
+
+    <section id="over" class="screen hidden">
+      <div id="over-newbest" class="newbest hidden">NEW BEST!</div>
+      <div class="over-score" id="over-score">0</div>
+      <div class="over-best">BEST <b id="over-best">0</b></div>
+      <div id="over-tease" class="tease"></div>
+      <ul id="over-details" class="details"></ul>
+      <div id="over-missions" class="missions"></div>
+      <button id="btn-retry" class="btn primary">もう一回 ↻</button>
+      <button id="btn-home" class="btn">メニュー</button>
+    </section>
+
+    <section id="shop" class="screen hidden">
+      <h2>スキン</h2>
+      <div class="coins">🪙 <b id="shop-coins">0</b></div>
+      <div id="shop-list" class="shop-list"></div>
+      <button class="btn btn-back">もどる</button>
+    </section>
+
+    <section id="missions" class="screen hidden">
+      <h2>ミッション</h2>
+      <div id="mission-list" class="missions"></div>
+      <button class="btn btn-back">もどる</button>
+    </section>
+
+    <script src="js/core.js"></script>
+    <script src="js/meta.js"></script>
+    <script src="js/audio.js"></script>
+    <script src="js/main.js"></script>
+  </body>
+</html>

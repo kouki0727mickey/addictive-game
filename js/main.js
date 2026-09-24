@@ -1,0 +1,422 @@
+/* ORBIT SWITCH — rendering, input and UI glue. */
+(function () {
+  'use strict';
+
+  const Core = window.OrbitCore;
+  const Meta = window.OrbitMeta;
+  const Sfx = window.Sfx;
+  const C = Core.CONFIG;
+
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const $ = (id) => document.getElementById(id);
+
+  let W = 0;
+  let H = 0;
+  let DPR = 1;
+  let unit = 1; // pixels per world unit
+
+  const save = Meta.load(window.localStorage);
+  Sfx.setMuted(save.muted);
+  const dailyBonus = Meta.checkDaily(save, Date.now());
+  Meta.persist(window.localStorage, save);
+
+  let state = 'menu'; // menu | play | over | shop | missions
+  let game = Core.createGame(Date.now());
+  let particles = [];
+  let texts = [];
+  let shake = 0;
+  let flash = 0;
+  let trail = [];
+  let deathTimer = 0;
+  let hue = 0;
+
+  function resize() {
+    DPR = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.floor(W * DPR);
+    canvas.height = Math.floor(H * DPR);
+    unit = Math.min(W, H);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  function skin() {
+    return Meta.SKINS.find((s) => s.id === save.skin) || Meta.SKINS[0];
+  }
+
+  function skinColor(which) {
+    const c = skin()[which];
+    return c === 'rainbow' ? 'hsl(' + (hue % 360) + ',100%,65%)' : c;
+  }
+
+  // ---------- screens ----------
+  function show(name) {
+    ['menu', 'over', 'shop', 'missions'].forEach((id) => $(id).classList.toggle('hidden', id !== name));
+    $('hud').classList.toggle('hidden', name !== 'play');
+    state = name;
+  }
+
+  function renderMenu() {
+    $('menu-best').textContent = save.best;
+    $('menu-coins').textContent = save.coins;
+    const lp = Meta.levelProgress(save.xp);
+    $('menu-level').textContent = lp.level;
+    $('menu-xp').style.width = Math.round((lp.into / lp.need) * 100) + '%';
+    $('btn-mute').textContent = save.muted ? '🔇' : '🔊';
+  }
+
+  function missionHtml(m, done) {
+    const pct = Math.min(100, Math.round((m.progress / m.goal) * 100));
+    return (
+      '<div class="mission' + (done ? ' done' : '') + '">' +
+      '<span class="reward">🪙' + m.reward + '</span>' +
+      (done ? '✅ ' : '') + m.text +
+      ' <small>(' + Math.min(m.progress, m.goal) + '/' + m.goal + ')</small>' +
+      '<div class="bar"><i style="width:' + pct + '%"></i></div></div>'
+    );
+  }
+
+  function renderMissions() {
+    $('mission-list').innerHTML = save.missions.map((m) => missionHtml(m, false)).join('');
+  }
+
+  function renderShop() {
+    $('shop-coins').textContent = save.coins;
+    $('shop-list').innerHTML = Meta.SKINS.map((s) => {
+      const owned = save.owned.indexOf(s.id) !== -1;
+      const bg = s.color === 'rainbow' ? 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' : s.color;
+      return (
+        '<button class="skin' + (save.skin === s.id ? ' selected' : '') + (owned ? '' : ' locked') + '" data-id="' + s.id + '">' +
+        '<span class="dot" style="background:' + bg + '"></span>' + s.name +
+        '<small>' + (owned ? (save.skin === s.id ? '使用中' : '所持') : '🪙' + s.price) + '</small></button>'
+      );
+    }).join('');
+  }
+
+  $('shop-list').addEventListener('click', (e) => {
+    const b = e.target.closest('.skin');
+    if (!b) return;
+    if (Meta.buySkin(save, b.dataset.id)) {
+      Sfx.coin();
+      Meta.persist(window.localStorage, save);
+    }
+    renderShop();
+  });
+
+  // ---------- game flow ----------
+  function startGame() {
+    Sfx.unlock();
+    game = Core.createGame((Date.now() ^ (Math.random() * 1e9)) >>> 0);
+    particles = [];
+    texts = [];
+    trail = [];
+    shake = 0;
+    flash = 0;
+    deathTimer = 0;
+    show('play');
+    $('hud-score').textContent = '0';
+    $('hud-mult').textContent = '';
+  }
+
+  function endGame() {
+    const run = {
+      score: game.score,
+      gems: game.gems,
+      nearMisses: game.nearMisses,
+      bestCombo: game.bestCombo,
+      feverCount: game.feverCount,
+    };
+    const sum = Meta.applyRun(save, run);
+    Meta.persist(window.localStorage, save);
+
+    $('over-score').textContent = run.score;
+    $('over-best').textContent = save.best;
+    $('over-newbest').classList.toggle('hidden', !sum.newBest);
+    const gap = save.best - run.score;
+    $('over-tease').textContent = sum.newBest ? '記録更新！' : gap <= 5 ? 'あと' + (gap + 1) + '点でベスト更新！' : 'ベストまで あと' + (gap + 1) + '点';
+    $('over-details').innerHTML =
+      '<li>ジェム <b>' + run.gems + '</b></li>' +
+      '<li>最大コンボ <b>' + run.bestCombo + '</b></li>' +
+      '<li>ニアミス <b>' + run.nearMisses + '</b></li>' +
+      '<li>🪙 <b>+' + sum.coins + '</b></li>' +
+      (sum.levelUps ? '<li>レベルアップ! <b>Lv' + Meta.levelFromXp(save.xp) + '</b></li>' : '');
+    $('over-missions').innerHTML =
+      sum.completed.map((m) => missionHtml(m, true)).join('') + save.missions.map((m) => missionHtml(m, false)).join('');
+    show('over');
+    if (sum.newBest) Sfx.best();
+    else if (sum.completed.length) Sfx.coin();
+  }
+
+  function onTap() {
+    if (state === 'play') {
+      Core.switchRing(game);
+    }
+  }
+
+  // ---------- input ----------
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    onTap();
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Enter') {
+      e.preventDefault();
+      if (state === 'play') onTap();
+      else if (state === 'menu' || state === 'over') startGame();
+    }
+  });
+
+  $('btn-play').addEventListener('click', startGame);
+  $('btn-retry').addEventListener('click', startGame);
+  $('btn-home').addEventListener('click', () => {
+    renderMenu();
+    show('menu');
+  });
+  $('btn-shop').addEventListener('click', () => {
+    renderShop();
+    show('shop');
+  });
+  $('btn-missions').addEventListener('click', () => {
+    renderMissions();
+    show('missions');
+  });
+  document.querySelectorAll('.btn-back').forEach((b) =>
+    b.addEventListener('click', () => {
+      renderMenu();
+      show('menu');
+    })
+  );
+  $('btn-mute').addEventListener('click', () => {
+    save.muted = !save.muted;
+    Sfx.setMuted(save.muted);
+    Meta.persist(window.localStorage, save);
+    renderMenu();
+  });
+
+  // ---------- effects ----------
+  function burst(x, y, color, n, speed) {
+    for (let i = 0; i < n; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const v = (0.2 + Math.random()) * speed;
+      particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.6 + Math.random() * 0.4, max: 1, color });
+    }
+  }
+
+  function popText(x, y, text, color, size) {
+    texts.push({ x, y, text, color, size: size || 22, life: 0.9 });
+  }
+
+  function handleEvents() {
+    for (const e of Core.drainEvents(game)) {
+      switch (e.type) {
+        case 'switch':
+          Sfx.switch();
+          break;
+        case 'gem':
+          Sfx.gem(e.combo);
+          burst(e.x, e.y, '#ffc94d', 10, 0.35);
+          popText(e.x, e.y, '+' + 2 * e.mult * (game.fever > 0 ? 2 : 1), '#ffc94d');
+          break;
+        case 'nearMiss':
+          Sfx.nearMiss();
+          popText(e.x, e.y, 'CLOSE!', '#4df3ff', 20);
+          break;
+        case 'smash':
+          Sfx.smash();
+          shake = Math.max(shake, 6);
+          burst(e.x, e.y, '#ff4d6d', 14, 0.5);
+          break;
+        case 'fever':
+          Sfx.fever();
+          flash = 0.5;
+          popText(0, 0, 'FEVER!!', '#ff7ad9', 44);
+          break;
+        case 'comboLost':
+          if (e.combo >= 3) popText(0, 0.06, 'combo lost', '#8a90b8', 18);
+          break;
+        case 'death':
+          Sfx.death();
+          shake = 16;
+          flash = 0.6;
+          burst(e.x, e.y, skinColor('color'), 40, 0.7);
+          deathTimer = 0.9;
+          break;
+      }
+    }
+  }
+
+  // ---------- rendering ----------
+  function toScreen(x, y) {
+    return [W / 2 + x * unit, H / 2 + y * unit];
+  }
+
+  function drawBackground(t) {
+    const fever = game.fever > 0;
+    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+    g.addColorStop(0, fever ? '#2a0b3a' : '#10123a');
+    g.addColorStop(1, '#07071a');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    // pulsing rings
+    for (let i = 0; i < 2; i++) {
+      const [cx, cy] = toScreen(0, 0);
+      const r = C.ringRadius[i] * unit;
+      ctx.beginPath();
+      ctx.arc(cx, cy, r, 0, Math.PI * 2);
+      ctx.strokeStyle = fever ? 'rgba(255,122,217,0.55)' : 'rgba(120,140,255,0.35)';
+      ctx.lineWidth = 2 + Math.sin(t * 4 + i) * 0.8;
+      ctx.stroke();
+    }
+    // centre core
+    const [cx, cy] = toScreen(0, 0);
+    const pr = 0.07 * unit * (1 + Math.sin(t * 6) * 0.04);
+    ctx.beginPath();
+    ctx.arc(cx, cy, pr, 0, Math.PI * 2);
+    ctx.fillStyle = fever ? 'rgba(255,122,217,0.25)' : 'rgba(77,243,255,0.12)';
+    ctx.fill();
+  }
+
+  function drawSpike(x, y, angle, ring) {
+    const [sx, sy] = toScreen(x, y);
+    const r = C.spikeRadius * unit;
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.rotate(angle + (ring === 0 ? Math.PI : 0));
+    ctx.beginPath();
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      const rr = i % 2 ? r * 0.55 : r * 1.25;
+      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+    }
+    ctx.closePath();
+    ctx.fillStyle = game.fever > 0 ? '#ff9ec0' : '#ff4d6d';
+    ctx.shadowColor = '#ff4d6d';
+    ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawGem(x, y, t) {
+    const [sx, sy] = toScreen(x, y);
+    const r = C.gemRadius * unit * (1 + Math.sin(t * 8) * 0.12);
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = '#ffc94d';
+    ctx.shadowColor = '#ffc94d';
+    ctx.shadowBlur = 14;
+    ctx.fillRect(-r * 0.7, -r * 0.7, r * 1.4, r * 1.4);
+    ctx.restore();
+  }
+
+  function drawPlayer() {
+    const p = Core.playerPos(game);
+    trail.push({ x: p.x, y: p.y });
+    if (trail.length > 14) trail.shift();
+    ctx.save();
+    for (let i = 0; i < trail.length; i++) {
+      const tp = trail[i];
+      const [sx, sy] = toScreen(tp.x, tp.y);
+      ctx.globalAlpha = (i / trail.length) * 0.5;
+      ctx.beginPath();
+      ctx.arc(sx, sy, C.playerRadius * unit * (i / trail.length), 0, Math.PI * 2);
+      ctx.fillStyle = skinColor('trail');
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    const [sx, sy] = toScreen(p.x, p.y);
+    ctx.beginPath();
+    ctx.arc(sx, sy, C.playerRadius * unit, 0, Math.PI * 2);
+    ctx.fillStyle = game.fever > 0 ? '#fff' : skinColor('color');
+    ctx.shadowColor = skinColor('color');
+    ctx.shadowBlur = 20;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawEffects(dt) {
+    for (const p of particles) {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.vx *= 0.92;
+      p.vy *= 0.92;
+      p.life -= dt;
+      const [sx, sy] = toScreen(p.x, p.y);
+      ctx.globalAlpha = Math.max(0, p.life);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(sx - 2, sy - 2, 4, 4);
+    }
+    particles = particles.filter((p) => p.life > 0);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    for (const tx of texts) {
+      tx.life -= dt;
+      tx.y -= dt * 0.08;
+      const [sx, sy] = toScreen(tx.x, tx.y);
+      ctx.globalAlpha = Math.max(0, Math.min(1, tx.life * 2));
+      ctx.font = '800 ' + tx.size + 'px system-ui, sans-serif';
+      ctx.fillStyle = tx.color;
+      ctx.fillText(tx.text, sx, sy);
+    }
+    texts = texts.filter((t) => t.life > 0);
+    ctx.globalAlpha = 1;
+  }
+
+  let last = performance.now();
+  function frame(now) {
+    const dt = Math.min(0.05, (now - last) / 1000);
+    last = now;
+    hue += dt * 120;
+
+    if (state === 'play') {
+      if (game.alive) {
+        Core.step(game, dt);
+      } else {
+        deathTimer -= dt;
+        if (deathTimer <= 0) endGame();
+      }
+      handleEvents();
+      $('hud-score').textContent = game.score;
+      const m = Core.multiplier(game) * (game.fever > 0 ? 2 : 1);
+      $('hud-mult').textContent = m > 1 ? '×' + m + (game.fever > 0 ? ' FEVER' : '') : '';
+    }
+
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    ctx.save();
+    if (shake > 0) {
+      ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
+      shake = Math.max(0, shake - dt * 40);
+    }
+    drawBackground(now / 1000);
+    if (state === 'play' || state === 'over') {
+      for (const o of game.objects) {
+        const q = Core.objectPos(o);
+        if (o.type === 'spike') drawSpike(q.x, q.y, o.angle, o.ring);
+        else drawGem(q.x, q.y, now / 1000);
+      }
+      if (game.alive) drawPlayer();
+    }
+    drawEffects(dt);
+    ctx.restore();
+
+    if (flash > 0) {
+      ctx.fillStyle = 'rgba(255,255,255,' + flash * 0.6 + ')';
+      ctx.fillRect(0, 0, W, H);
+      flash = Math.max(0, flash - dt * 2);
+    }
+    requestAnimationFrame(frame);
+  }
+
+  renderMenu();
+  if (dailyBonus > 0) {
+    const d = $('daily');
+    d.textContent = 'デイリーボーナス 🪙+' + dailyBonus + '（' + save.streak + '日連続）';
+    d.classList.remove('hidden');
+  }
+  show('menu');
+  requestAnimationFrame(frame);
+})();
