@@ -28,10 +28,11 @@ tags: [music, singing-voice, adaptive-audio, rights]
 - **学習データの権利**: 2024年に3大メジャー（UMG・Sony・Warner）がSuno・Udioを著作権侵害で提訴。その後「訴訟 → 和解 → ライセンス提携」の流れが一部で進んでいる[^music]（2026年9月時点）
   | 当事者 | 状況 |
   |---|---|
-  | UMG × Udio | 2025年に和解、ライセンス提携（新プラットフォームを2026年に立ち上げ予定と報道） |
-  | Warner × Suno / Udio | 2025年11月までに和解、ライセンス提携。Sunoは今後ライセンス済み楽曲で学習、ダウンロードは有料化と報道 |
-  | Sony × Suno / Udio、UMG × Suno | 係争継続。2026年9月、SonyとUMGはSunoの新モデル「v6」も旧モデルの出力で学習した「同じ毒の木の果実」だとして新たに提訴 |
-  | Suno × BMG、Believe | 2026年8〜9月にライセンス・提携を締結と報道 |
+  | UMG × Udio | 2025年10月29日に和解、ライセンス契約。ライセンス済みの新プラットフォームを2026年に立ち上げ予定 |
+  | Warner × Udio / Suno | 2025年11月中旬にUdioと、数日後にSunoと和解・提携（メジャーで初めてSunoと提携） |
+  | Sony・UMG × Suno | 係争継続。2026年9月、マサチューセッツ連邦地裁に新たに提訴。Sunoの新モデル「v6」は旧モデルの出力でも学習しており「同じ毒の木の果実」だと主張。侵害対象として60,202曲を特定 |
+  | Suno側の主張 | v6はWarner・BMG・Believeからライセンスを受けた音源、コミュニティの作品や好みのデータなどで学習したと説明 |
+  | UMGの方針 | ライセンスは、生成物を自社プラットフォーム内にとどめる企業（Udio、Spotifyのリミックス機能など）に限定。AI生成曲を大量に流通させたとして配信代行のDistroKidも提訴 |
   | 独立系ミュージシャン・米国音楽家連盟（AFM） | メジャーの和解では小規模権利者が守られないとして、別途集団訴訟や提訴 |
   - 💡示唆: 「学習用ライセンス市場」が現実に形成されつつあり、今後の音楽AIは**権利処理済みデータで学習していること**が参入条件になる可能性が高い
 - **声の権利**: 歌手の声の無断模倣。パブリシティ権・不正競争の観点で各国で議論・立法
@@ -44,4 +45,4 @@ tags: [music, singing-voice, adaptive-audio, rights]
 - 作曲家の意図（テーマ・モチーフ）を保ちつつ変化させる **「作曲家が制御できる生成」** が鍵
 
 ## 参考文献
-[^music]: Variety「Sony Music, Universal Music Group Sue Suno Over Label-Backed Model」https://variety.com/2026/music/news/sony-music-universal-music-sue-suno-label-backed-model-1236866921/ ／ Music Business Worldwide https://www.musicbusinessworldwide.com/universal-and-sony-sue-suno-for-a-second-time-claiming-platforms-v6-models-are-the-fruit-of-the-same-poisoned-tree/ ／ Billboard https://www.billboard.com/pro/what-suno-udio-licensing-deals-mean-future-ai-music/ ／ The Hollywood Reporter（AFM提訴）https://www.hollywoodreporter.com/music/music-industry-news/musicians-union-lawsuit-ai-song-generator-settlement-1236614835/ （確認日: 2026-09-24）
+[^music]: Variety「Sony Music, Universal Music Group Sue Suno Over Label-Backed Model」https://variety.com/2026/music/news/sony-music-universal-music-sue-suno-label-backed-model-1236866921/ ／ Music Business Worldwide https://www.musicbusinessworldwide.com/universal-and-sony-sue-suno-for-a-second-time-claiming-platforms-v6-models-are-the-fruit-of-the-same-poisoned-tree/ ／ Billboard https://www.billboard.com/pro/what-suno-udio-licensing-deals-mean-future-ai-music/ ／ Music Business Worldwide（UMG×Udio和解）https://www.musicbusinessworldwide.com/universal-music-settles-udio-lawsuit-strikes-deal-for-licensed-ai-music-platform/ ／ Music Business Worldwide（Warner×Suno和解）https://www.musicbusinessworldwide.com/warner-music-group-settles-with-suno-strikes-first-of-its-kind-deal-with-ai-song-generator/ ／ The Hollywood Reporter（AFM提訴）https://www.hollywoodreporter.com/music/music-industry-news/musicians-union-lawsuit-ai-song-generator-settlement-1236614835/ （確認日: 2026-09-24）

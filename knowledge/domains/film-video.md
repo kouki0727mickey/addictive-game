@@ -30,12 +30,13 @@ tags: [film, video-generation, vfx, dubbing]
 
 ## 論点
 - **労働**: 米国では2023年のストライキ後の協定でAI条項が導入され、2026年の改定でさらに強化された[^labor]
-  - **SAG-AFTRA（俳優）**: 2026年6月に新TV/劇場契約を批准。報道によれば主な追加点は、
-    - 通常の写真から作られたデジタルレプリカも保護の対象になった（スキャン由来に限らない）
-    - 外国語吹替にデジタルレプリカを使うには本人の同意が必要
-    - 実在の俳優の代わりに合成パフォーマーを使う場合のペナルティ
-    - 俳優のデータをAI学習用に第三者へライセンスする場合の通知義務
-  - **WGA（脚本家）**: 2026年4月に新MBA（2026年5月〜2030年5月）を批准。2023年協定のAI条項（AIは「原作・素材」扱いにしない、AI使用の開示など）を引き継いでいる。脚本をAI学習用に第三者へライセンスする場合の通知・協議も報じられている【要確認: 2026年MBAのAI条項の詳細】
+  - **SAG-AFTRA（俳優）**: 2026年6月に4年契約（2026年7月1日〜2030年6月30日）を批准（賛成91.4%）。主なAI条項:
+    - 合成パフォーマー（AIで作った俳優）は、生身の俳優やそのデジタル分身と比べて「**大きな付加価値**」がある場合にだけ使える。違反には仲裁と金銭的ペナルティの可能性
+    - 独立に作られたデジタルレプリカ（人の演技と生成AIを組み合わせたもの）の利用に最低報酬と二次使用料
+    - 俳優をスキャンするには「説明できる事業上の理由」が必要
+    - 演技をAI学習用に第三者へライセンスする場合、組合への通知と協議が必要（本人の同意や報酬の最低額は定められていないとの批判もある）
+  - **WGA（脚本家）**: 2026年4月24日に新MBA（2026年5月2日〜2030年5月1日）を批准。2023年に勝ち取ったAI保護をすべて維持したうえで、会社が脚本やそれを基にした作品を**商用の生成AIの学習用にライセンスする場合、組合に書面で通知**する義務を追加。組合は脚本家への報酬を含めて協議を求められる
+  - 💡示唆: 米国の労使協定は「AI利用の禁止」ではなく **「通知・協議・報酬」で利用を管理する** 方向に落ち着きつつある
 - **一貫性**: キャラ・衣装・照明のショット間一貫性は、長尺作品での最大の技術課題
 - **観客の受容**: 「AI製」と知ったときの評価の変化
 
@@ -43,4 +44,4 @@ tags: [film, video-generation, vfx, dubbing]
 - 個別化された映像作品は「みんなで観て語る」文化と両立するか
 
 ## 参考文献
-[^labor]: SAG-AFTRA「A.I. Bargaining And Policy Work Timeline」https://www.sagaftra.org/contracts-industry-resources/member-resources/artificial-intelligence/sag-aftra-ai-bargaining-and ／ IndieWire https://www.indiewire.com/news/analysis/sag-aftra-ai-deal-2026-human-actors-analysis-1235194299/ ／ WGA「WGA Ratifies 2026 Minimum Basic Agreement With AMPTP」https://www.wga.org/news-events/news/press/wga-ratifies-2026-minimum-basic-agreement-with-amptp （確認日: 2026-09-24）
+[^labor]: Variety「SAG-AFTRA Members Ratify Contract With AI Terms and Pension Merger」https://variety.com/2026/film/news/sag-aftra-ratification-ai-pension-merger-1236767288/ ／ Variety「SAG-AFTRA Deal Stirs Concerns on Artificial Intelligence and Pensions」https://variety.com/2026/film/news/sag-aftra-artificial-intelligence-pensions-concerns-1236746577/ ／ The Hollywood Reporter https://www.hollywoodreporter.com/business/business-news/sag-aftra-ratifies-4-year-deal-studios-1236613908/ ／ WGA「Summary of the 2026 WGA MBA」https://www.wgacontract.org/the-campaign/summary-of-the-2026-wga-mba ／ WGA「WGA Ratifies 2026 Minimum Basic Agreement With AMPTP」https://www.wga.org/news-events/news/press/wga-ratifies-2026-minimum-basic-agreement-with-amptp （確認日: 2026-09-24）

@@ -68,6 +68,8 @@ tags: [games, npc, pcg, liveops, qa]
   - 開示が**必要**: プレイ中にAIがコンテンツを生成する場合（ランタイム生成）→ チェックボックスで申告
   - 開示が**不要**: コーディング支援など、開発効率化のためだけに使うAIツール
   - LLM NPCのようなランタイム生成は必ず申告対象になる点に注意
+- **会話NPCとAIコンパニオン規制**: 雑談・恋愛・悩み相談までできるNPCは、米国の州法（カリフォルニア州SB 243など）でコンパニオン扱いになり得る。ゲームの話題に限定したボットは対象外という規定がある → [ethics-legal](../ethics-legal/ethics-legal.md#4-利用者保護)
+- **声の権利（日本）**: 実在の声優に**似せた**AIボイスは、名前を出さなくてもパブリシティ権侵害になり得る（法務省の解釈指針、2026年8月）
 - **品質の均質化**: AI生成アセットだけで作ると「どこかで見た」見た目になる
 - **推論コストの無制限化**: 1プレイヤーあたりのコスト上限を設計に組み込む
 
@@ -78,6 +80,8 @@ tags: [games, npc, pcg, liveops, qa]
 - [ ] インジェクション・不適切入力への評価セットを用意したか
 - [ ] 1プレイヤーあたりの推論コストの上限と、上限到達時の挙動を決めたか
 - [ ] 声・見た目を使う場合、権利者の同意と契約条件を確認したか
+- [ ] NPCの会話範囲が、AIコンパニオン規制の対象になるかどうかを確認したか
+- [ ] Steamなどストアの生成AI申告（ランタイム生成を含む）を行ったか
 
 ## 参考文献
 [^steam]: Game Developer「Valve tweaks and clarifies AI disclosure rules for Steam」https://www.gamedeveloper.com/business/valve-tweaks-and-clarifies-ai-disclosure-rules-for-steam ／ VGC https://www.videogameschronicle.com/news/valve-has-significantly-rewritten-steams-rules-for-how-developers-much-disclose-ai-use/ （確認日: 2026-09-24）
