@@ -34,7 +34,7 @@ test('applyRun updates best and coins', () => {
   const s = Meta.load(memStorage(), rng);
   const r = Meta.applyRun(s, { score: 40, gems: 5, nearMisses: 0, bestCombo: 3, feverCount: 0 }, rng);
   assert.strictEqual(s.best, 40);
-  assert.ok(r.coins >= 15);
+  assert.ok(r.coins >= 10);
   assert.strictEqual(r.newBest, false); // first run is not celebrated as "new best"
   const r2 = Meta.applyRun(s, { score: 41, gems: 0, nearMisses: 0, bestCombo: 0, feverCount: 0 }, rng);
   assert.strictEqual(r2.newBest, true);
@@ -42,11 +42,12 @@ test('applyRun updates best and coins', () => {
 
 test('levels', () => {
   assert.strictEqual(Meta.levelFromXp(0), 1);
-  assert.strictEqual(Meta.levelFromXp(49), 1);
-  assert.strictEqual(Meta.levelFromXp(50), 2);
-  assert.strictEqual(Meta.levelFromXp(150), 3);
-  const p = Meta.levelProgress(75);
-  assert.deepStrictEqual(p, { level: 2, into: 25, need: 100 });
+  assert.strictEqual(Meta.levelFromXp(Meta.xpForLevel(1) - 1), 1);
+  assert.strictEqual(Meta.levelFromXp(Meta.xpForLevel(1)), 2);
+  assert.strictEqual(Meta.levelFromXp(Meta.xpForLevel(2)), 3);
+  const p = Meta.levelProgress(Meta.xpForLevel(1) + 5);
+  assert.deepStrictEqual(p, { level: 2, into: 5, need: Meta.xpForLevel(2) - Meta.xpForLevel(1) });
+  assert.deepStrictEqual(Meta.levelProgress(0), { level: 1, into: 0, need: Meta.xpForLevel(1) });
 });
 
 test('daily streak', () => {
@@ -66,10 +67,10 @@ test('buy skin', () => {
   assert.strictEqual(Meta.buySkin(s, 'sakura'), false);
   s.coins = 100;
   assert.strictEqual(Meta.buySkin(s, 'sakura'), true);
-  assert.strictEqual(s.coins, 40);
+  assert.strictEqual(s.coins, 20);
   assert.strictEqual(s.skin, 'sakura');
   assert.strictEqual(Meta.buySkin(s, 'neon'), true);
-  assert.strictEqual(s.coins, 40);
+  assert.strictEqual(s.coins, 20);
 });
 
 test('missions complete and refill', () => {
@@ -100,4 +101,28 @@ test('load tolerates a storage that throws', () => {
   const s = Meta.load(bad, rng);
   assert.strictEqual(s.missions.length, 3);
   Meta.persist(bad, s); // must not throw
+});
+
+test('economy: a beginner (~20 pts/run) unlocks the first skin in 3-8 runs', () => {
+  const s = Meta.load(memStorage(), rng);
+  const first = Meta.SKINS.filter((k) => k.price > 0).sort((a, b) => a.price - b.price)[0];
+  let runs = 0;
+  while (s.coins < first.price && runs < 50) {
+    Meta.applyRun(s, { score: 20, gems: 3, nearMisses: 1, bestCombo: 2, feverCount: 0 }, rng);
+    runs++;
+  }
+  assert.ok(runs >= 3 && runs <= 8, 'first skin after ' + runs + ' runs');
+});
+
+test('economy: one monster run cannot buy out the shop', () => {
+  const s = Meta.load(memStorage(), rng);
+  const r = Meta.applyRun(s, { score: 5000, gems: 300, nearMisses: 80, bestCombo: 100, feverCount: 10 }, rng);
+  const total = Meta.SKINS.reduce((a, k) => a + k.price, 0);
+  assert.ok(r.coins < total * 0.2, 'monster run paid ' + r.coins + ' of ' + total);
+});
+
+test('coins grow with score but with diminishing returns', () => {
+  const c = (score) => Meta.runCoins({ score, gems: 0 });
+  assert.ok(c(100) > c(10));
+  assert.ok(c(1000) - c(900) < c(100) - c(0));
 });

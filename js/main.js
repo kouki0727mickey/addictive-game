@@ -155,9 +155,10 @@
     hitStop = 0;
     slowMo = 0;
     readyTimer = 0;
+    missionsAnnounced = [];
     show('play');
     hudCache.score = -1;
-    hudCache.mult = hudCache.fever = null;
+    hudCache.mult = hudCache.fever = hudCache.best = null;
     updateHud();
   }
 
@@ -617,8 +618,36 @@
   }
 
   // DOM writes are relatively expensive: only touch the HUD when something changed.
-  const hudCache = { score: -1, mult: '', fever: '' };
+  const hudCache = { score: -1, mult: '', fever: '', best: '' };
+  // Tell the player the moment a mission is done instead of waiting for the results screen.
+  let missionsAnnounced = [];
+  function checkMissionsLive() {
+    for (const m of save.missions) {
+      if (m.cumulative || missionsAnnounced.indexOf(m) !== -1) continue;
+      if ((game[m.kind] || 0) >= m.goal) {
+        missionsAnnounced.push(m);
+        popText(0, 0.1, '✅ ' + m.text, '#ffc94d', 18);
+        Sfx.coin();
+      }
+    }
+  }
+
   function updateHud() {
+    checkMissionsLive();
+    // Chasing your best is the core hook: show it, and celebrate the moment you pass it.
+    const beaten = save.best > 0 && game.score > save.best;
+    const bestText = save.best === 0 ? '' : beaten ? 'NEW BEST!' : 'BEST ' + save.best;
+    if (bestText !== hudCache.best) {
+      const el = $('hud-best');
+      el.textContent = bestText;
+      el.classList.toggle('beaten', beaten);
+      if (beaten && hudCache.best && hudCache.best !== 'NEW BEST!') {
+        popText(0, -0.08, 'NEW BEST!', '#ffc94d', 30);
+        Sfx.coin();
+        buzz(20);
+      }
+      hudCache.best = bestText;
+    }
     if (game.score !== hudCache.score) {
       const el = $('hud-score');
       el.textContent = game.score;

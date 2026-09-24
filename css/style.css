@@ -408,3 +408,15 @@ h2 {
     transform: translateX(6px);
   }
 }
+
+#hud-best {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 1px;
+  min-height: 16px;
+}
+
+#hud-best.beaten {
+  color: var(--gold);
+}

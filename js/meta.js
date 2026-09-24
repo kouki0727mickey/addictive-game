@@ -12,11 +12,12 @@
 
   const SKINS = [
     { id: 'neon', name: 'ネオン', price: 0, color: '#4df3ff', trail: '#4df3ff' },
-    { id: 'sakura', name: 'サクラ', price: 60, color: '#ff7ad9', trail: '#ffb3ec' },
-    { id: 'lime', name: 'ライム', price: 120, color: '#b6ff4d', trail: '#e2ff9e' },
-    { id: 'sun', name: 'サン', price: 200, color: '#ffc94d', trail: '#ff7b3a' },
-    { id: 'void', name: 'ヴォイド', price: 350, color: '#b28cff', trail: '#6a3dff' },
-    { id: 'rainbow', name: 'レインボー', price: 600, color: 'rainbow', trail: 'rainbow' },
+    { id: 'sakura', name: 'サクラ', price: 80, color: '#ff7ad9', trail: '#ffb3ec' },
+    { id: 'lime', name: 'ライム', price: 200, color: '#b6ff4d', trail: '#e2ff9e' },
+    { id: 'sun', name: 'サン', price: 400, color: '#ffc94d', trail: '#ff7b3a' },
+    { id: 'void', name: 'ヴォイド', price: 700, color: '#b28cff', trail: '#6a3dff' },
+    { id: 'ghost', name: 'ゴースト', price: 1100, color: '#eef2ff', trail: '#8a90b8' },
+    { id: 'rainbow', name: 'レインボー', price: 1600, color: 'rainbow', trail: 'rainbow' },
   ];
 
   const MISSION_POOL = [
@@ -63,7 +64,7 @@
     const m = pool[Math.floor(rng() * pool.length)];
     const tier = Math.min(m.goals.length - 1, Math.floor(save.missionTier / 2));
     const goal = m.goals[tier];
-    return { kind: m.kind, goal, progress: 0, reward: 15 + tier * 15, text: m.text.replace('{n}', goal), cumulative: !!m.cumulative };
+    return { kind: m.kind, goal, progress: 0, reward: 10 + tier * 10, text: m.text.replace('{n}', goal), cumulative: !!m.cumulative };
   }
 
   function fillMissions(save, rng) {
@@ -121,17 +122,21 @@
     }
   }
 
+  // Cumulative xp needed to reach level n+1 from level 1. Quadratic-ish so early levels come fast.
+  function xpForLevel(n) {
+    return 40 * n * n + 10 * n;
+  }
+
   function levelFromXp(xp) {
-    // Level n needs 50 * n * (n + 1) / 2 cumulative xp
     let lvl = 1;
-    while (xp >= (50 * lvl * (lvl + 1)) / 2) lvl++;
+    while (xp >= xpForLevel(lvl)) lvl++;
     return lvl;
   }
 
   function levelProgress(xp) {
     const lvl = levelFromXp(xp);
-    const prev = (50 * (lvl - 1) * lvl) / 2;
-    const next = (50 * lvl * (lvl + 1)) / 2;
+    const prev = lvl === 1 ? 0 : xpForLevel(lvl - 1);
+    const next = xpForLevel(lvl);
     return { level: lvl, into: xp - prev, need: next - prev };
   }
 
@@ -147,6 +152,12 @@
     return bonus;
   }
 
+  // Coins grow with the square root of score: good runs pay more, but a single great run
+  // can't unlock the whole shop (score itself grows super-linearly through multipliers).
+  function runCoins(run) {
+    return 2 + Math.floor(Math.sqrt(Math.max(0, run.score)) * 1.2) + Math.floor(Math.sqrt(Math.max(0, run.gems)) * 2);
+  }
+
   // Apply the result of a run. Returns a summary for the game-over screen.
   function applyRun(save, run, rng) {
     const summary = { newBest: false, coins: 0, levelUps: 0, completed: [], prevBest: save.best };
@@ -156,14 +167,13 @@
       save.best = run.score;
       summary.newBest = summary.prevBest > 0;
     }
-    const earned = Math.floor(run.score / 4) + run.gems;
-    summary.coins += earned;
+    summary.coins += runCoins(run);
 
     const lvlBefore = levelFromXp(save.xp);
     save.xp += run.score;
     const lvlAfter = levelFromXp(save.xp);
     summary.levelUps = lvlAfter - lvlBefore;
-    summary.coins += summary.levelUps * 25;
+    summary.coins += summary.levelUps * 10;
 
     for (const m of save.missions) {
       const value = m.kind === 'plays' ? 1 : run[m.kind] || 0;
@@ -196,5 +206,5 @@
     return true;
   }
 
-  return { KEY, SKINS, MISSION_POOL, defaultSave, sanitize, load, persist, levelFromXp, levelProgress, checkDaily, applyRun, buySkin, today, dayDiff };
+  return { KEY, SKINS, runCoins, xpForLevel, MISSION_POOL, defaultSave, sanitize, load, persist, levelFromXp, levelProgress, checkDaily, applyRun, buySkin, today, dayDiff };
 });
