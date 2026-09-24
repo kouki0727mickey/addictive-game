@@ -395,3 +395,16 @@ h2 {
   max-width: calc(100% - 32px);
   z-index: 2;
 }
+
+.skin.nope {
+  animation: nope 0.3s;
+}
+
+@keyframes nope {
+  25% {
+    transform: translateX(-6px);
+  }
+  75% {
+    transform: translateX(6px);
+  }
+}

@@ -2,18 +2,33 @@
 // Usage: node tests/e2e.js [outDir]
 const path = require('path');
 const fs = require('fs');
-let chromium;
-try {
-  ({ chromium } = require('playwright'));
-} catch (e) {
-  ({ chromium } = require(path.join(process.execPath, '../../lib/node_modules/playwright')));
-}
+const { chromium } = require('playwright');
+
+const http = require('http');
 
 const outDir = process.argv[2] || path.join(__dirname, '..', 'screenshots');
 fs.mkdirSync(outDir, { recursive: true });
-const url = 'file://' + path.join(__dirname, '..', 'index.html');
+const root = path.join(__dirname, '..');
+const TYPES = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.webmanifest': 'application/manifest+json' };
+
+// Serve over HTTP like a real deployment (file:// hides 404s, manifest and service-worker problems).
+function serve() {
+  const server = http.createServer((req, res) => {
+    const p = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    const file = path.join(root, p.endsWith('/') ? p + 'index.html' : p);
+    if (!file.startsWith(root) || !fs.existsSync(file) || fs.statSync(file).isDirectory()) {
+      res.writeHead(404);
+      return res.end('not found');
+    }
+    res.writeHead(200, { 'Content-Type': TYPES[path.extname(file)] || 'application/octet-stream' });
+    fs.createReadStream(file).pipe(res);
+  });
+  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve(server)));
+}
 
 (async () => {
+  const server = await serve();
+  const url = 'http://127.0.0.1:' + server.address().port + '/';
   const browser = await chromium.launch();
   const errors = [];
   for (const vp of [
@@ -23,6 +38,7 @@ const url = 'file://' + path.join(__dirname, '..', 'index.html');
     const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch, reducedMotion: 'reduce' });
     page.on('pageerror', (e) => errors.push(vp.name + ': ' + e.message));
     page.on('console', (m) => m.type() === 'error' && errors.push(vp.name + ' console: ' + m.text()));
+    page.on('response', (r) => r.status() >= 400 && errors.push(vp.name + ': HTTP ' + r.status() + ' ' + r.url()));
     await page.goto(url);
     await page.waitForTimeout(400);
     await page.screenshot({ path: path.join(outDir, vp.name + '-menu.png') });
@@ -95,7 +111,25 @@ const url = 'file://' + path.join(__dirname, '..', 'index.html');
     await page.screenshot({ path: path.join(outDir, 'autoplay.png') });
     await page.close();
   }
+  // Offline: after one online visit the service worker must be able to serve the whole game.
+  {
+    const context = await browser.newContext({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+    const page = await context.newPage();
+    page.on('pageerror', (e) => errors.push('offline: ' + e.message));
+    await page.goto(url);
+    await page.evaluate(() => navigator.serviceWorker.ready);
+    await page.reload(); // now controlled by the service worker
+    await context.setOffline(true);
+    await page.reload();
+    if (!(await page.isVisible('#btn-play'))) errors.push('offline: menu did not load offline');
+    await page.click('#btn-play');
+    await page.waitForTimeout(300);
+    if (!(await page.isVisible('#hud'))) errors.push('offline: game did not start offline');
+    await context.close();
+  }
+
   await browser.close();
+  server.close();
   if (errors.length) {
     console.error('E2E FAIL\n' + errors.join('\n'));
     process.exit(1);

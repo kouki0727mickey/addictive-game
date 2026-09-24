@@ -44,8 +44,10 @@
   let deathTimer = 0;
   let hitStop = 0; // seconds of frozen time (impact feel)
   let slowMo = 0; // seconds of slow motion remaining
+  let readyTimer = 0; // seconds of "READY" freeze after resuming from pause
   let hue = 0;
   // Test hook: ?autoplay lets the built-in autopilot play real runs (used by the E2E test).
+  const REDUCED_MOTION = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const AUTOPLAY = /[?&]autoplay\b/.test(window.location.search);
   let retryLockUntil = 0; // prevents a panic-tap at death from skipping the results
 
@@ -110,11 +112,12 @@
 
   function renderShop() {
     $('shop-coins').textContent = save.coins;
+    $('shop-msg').textContent = '';
     $('shop-list').innerHTML = Meta.SKINS.map((s) => {
       const owned = save.owned.indexOf(s.id) !== -1;
       const bg = s.color === 'rainbow' ? 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' : s.color;
       return (
-        '<button class="skin' + (save.skin === s.id ? ' selected' : '') + (owned ? '' : ' locked') + '" data-id="' + s.id + '">' +
+        '<button class="skin' + (save.skin === s.id ? ' selected' : '') + (owned ? '' : ' locked') + '" data-id="' + s.id + '" aria-pressed="' + (save.skin === s.id) + '">' +
         '<span class="dot" style="background:' + bg + '"></span>' + s.name +
         '<small>' + (owned ? (save.skin === s.id ? '使用中' : '所持') : '🪙' + s.price) + '</small></button>'
       );
@@ -124,11 +127,18 @@
   $('shop-list').addEventListener('click', (e) => {
     const b = e.target.closest('.skin');
     if (!b) return;
-    if (Meta.buySkin(save, b.dataset.id)) {
+    const id = b.dataset.id;
+    if (Meta.buySkin(save, id)) {
       Sfx.coin();
       Meta.persist(storage, save);
+      renderShop();
+    } else {
+      const skinDef = Meta.SKINS.find((s) => s.id === id);
+      $('shop-msg').textContent = 'コインが足りません（あと 🪙' + (skinDef.price - save.coins) + '）— プレイして集めよう！';
+      b.classList.remove('nope');
+      void b.offsetWidth;
+      b.classList.add('nope');
     }
-    renderShop();
   });
 
   // ---------- game flow ----------
@@ -144,6 +154,7 @@
     deathTimer = 0;
     hitStop = 0;
     slowMo = 0;
+    readyTimer = 0;
     show('play');
     hudCache.score = -1;
     hudCache.mult = hudCache.fever = null;
@@ -241,7 +252,7 @@
   }
 
   function onTap() {
-    if (state === 'play') {
+    if (state === 'play' && readyTimer <= 0) {
       Core.switchRing(game);
     }
   }
@@ -274,13 +285,30 @@
   function resume() {
     if (state !== 'pause') return;
     last = performance.now();
+    readyTimer = 0.8; // short countdown so the player can re-orient before time moves
     show('play');
   }
+  function showDaily(bonus) {
+    if (bonus <= 0) return;
+    const d = $('daily');
+    d.textContent = 'デイリーボーナス 🪙+' + bonus + '（' + save.streak + '日連続）';
+    d.classList.remove('hidden');
+  }
   document.addEventListener('visibilitychange', () => {
-    if (document.hidden) pause();
+    if (document.hidden) return pause();
+    // An installed PWA can stay open for days: re-check the daily bonus when we come back.
+    const bonus = Meta.checkDaily(save, Date.now());
+    if (bonus > 0) {
+      Meta.persist(storage, save);
+      showDaily(bonus);
+      if (state === 'menu') renderMenu();
+    }
   });
   window.addEventListener('blur', pause);
-  $('btn-resume').addEventListener('click', resume);
+  $('pause').addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    resume();
+  });
 
   $('btn-play').addEventListener('click', startGame);
   $('btn-retry').addEventListener('click', () => {
@@ -361,6 +389,9 @@
           buzz([20, 40, 20]);
           flash = 0.5;
           popText(0, 0, 'FEVER!!', '#ff7ad9', 44);
+          break;
+        case 'feverEnd':
+          popText(0, 0, 'FEVER END', '#ff7ad9', 24);
           break;
         case 'comboLost':
           if (e.combo >= 3) popText(0, 0.06, 'combo lost', '#8a90b8', 18);
@@ -486,6 +517,9 @@
   }
 
   function drawPlayer() {
+    // Blink while invulnerable after fever, and flicker in the last second of fever as a warning.
+    const warn = game.grace > 0 || (game.fever > 0 && game.fever < 1);
+    if (warn && Math.floor(game.t * 14) % 2 === 0) return;
     const p = Core.playerPos(game);
     // Trail length is measured in game time, so it looks the same at 60Hz and 120Hz.
     const TRAIL_T = 0.2;
@@ -633,7 +667,9 @@
 
     if (state === 'play') {
       if (AUTOPLAY && Core.autopilot(game)) Core.switchRing(game);
-      if (hitStop > 0) {
+      if (readyTimer > 0) {
+        readyTimer -= dt;
+      } else if (hitStop > 0) {
         hitStop -= dt;
       } else if (game.alive) {
         let scale = 1;
@@ -652,6 +688,7 @@
 
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
     ctx.save();
+    if (REDUCED_MOTION) shake = flash = 0; // no screen shake or white flashes for motion-sensitive players
     if (shake > 0) {
       ctx.translate((Math.random() - 0.5) * shake, (Math.random() - 0.5) * shake);
       shake = Math.max(0, shake - dt * 40);
@@ -667,6 +704,16 @@
       if (game.alive) drawPlayer();
       ctx.globalAlpha = 1;
       if (state === 'play' && game.alive && save.plays < 3 && game.passedSpikes < 4) drawTutorial(now / 1000);
+      if (state === 'play' && readyTimer > 0) {
+        const [sx, sy] = toScreen(0, 0);
+        ctx.save();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = '900 30px system-ui, sans-serif';
+        ctx.fillStyle = '#fff';
+        ctx.fillText('READY', sx, sy);
+        ctx.restore();
+      }
     }
     drawEffects(dt);
     ctx.restore();
@@ -679,12 +726,13 @@
     requestAnimationFrame(frame);
   }
 
-  renderMenu();
-  if (dailyBonus > 0) {
-    const d = $('daily');
-    d.textContent = 'デイリーボーナス 🪙+' + dailyBonus + '（' + save.streak + '日連続）';
-    d.classList.remove('hidden');
+  // Offline support (only meaningful when served over http/https).
+  if ('serviceWorker' in navigator && /^https?:/.test(window.location.protocol)) {
+    window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
   }
+
+  renderMenu();
+  showDaily(dailyBonus);
   show('menu');
   requestAnimationFrame(frame);
 })();

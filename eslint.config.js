@@ -1,13 +1,13 @@
 module.exports = [
   {
-    files: ['js/**/*.js', 'tests/**/*.js'],
+    files: ['js/**/*.js', 'tests/**/*.js', 'sw.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',
       globals: {
         window: 'readonly', document: 'readonly', self: 'readonly', module: 'writable', require: 'readonly',
         performance: 'readonly', requestAnimationFrame: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly',
-        localStorage: 'readonly', navigator: 'readonly', process: 'readonly', __dirname: 'readonly', console: 'readonly',
+        localStorage: 'readonly', navigator: 'readonly', URL: 'readonly', caches: 'readonly', fetch: 'readonly', process: 'readonly', __dirname: 'readonly', console: 'readonly',
       },
     },
     rules: {
