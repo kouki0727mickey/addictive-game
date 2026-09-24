@@ -29,9 +29,18 @@ tags: [film, video-generation, vfx, dubbing]
 - 差別化は「生成できること」ではなく **企画力・スピード・データによる改善サイクル** に移る。
 
 ## 論点
-- **労働**: 俳優・脚本家の組合と制作側の協定で、デジタルレプリカや生成AI利用に同意・報酬の条件が設けられている（米国の2023年ストライキ後の協定など）【要確認: 最新の協定内容】
+- **労働**: 米国では2023年のストライキ後の協定でAI条項が導入され、2026年の改定でさらに強化された[^labor]
+  - **SAG-AFTRA（俳優）**: 2026年6月に新TV/劇場契約を批准。報道によれば主な追加点は、
+    - 通常の写真から作られたデジタルレプリカも保護の対象になった（スキャン由来に限らない）
+    - 外国語吹替にデジタルレプリカを使うには本人の同意が必要
+    - 実在の俳優の代わりに合成パフォーマーを使う場合のペナルティ
+    - 俳優のデータをAI学習用に第三者へライセンスする場合の通知義務
+  - **WGA（脚本家）**: 2026年4月に新MBA（2026年5月〜2030年5月）を批准。2023年協定のAI条項（AIは「原作・素材」扱いにしない、AI使用の開示など）を引き継いでいる。脚本をAI学習用に第三者へライセンスする場合の通知・協議も報じられている【要確認: 2026年MBAのAI条項の詳細】
 - **一貫性**: キャラ・衣装・照明のショット間一貫性は、長尺作品での最大の技術課題
 - **観客の受容**: 「AI製」と知ったときの評価の変化
 
 ## 未解決の問い
 - 個別化された映像作品は「みんなで観て語る」文化と両立するか
+
+## 参考文献
+[^labor]: SAG-AFTRA「A.I. Bargaining And Policy Work Timeline」https://www.sagaftra.org/contracts-industry-resources/member-resources/artificial-intelligence/sag-aftra-ai-bargaining-and ／ IndieWire https://www.indiewire.com/news/analysis/sag-aftra-ai-deal-2026-human-actors-analysis-1235194299/ ／ WGA「WGA Ratifies 2026 Minimum Basic Agreement With AMPTP」https://www.wga.org/news-events/news/press/wga-ratifies-2026-minimum-basic-agreement-with-amptp （確認日: 2026-09-24）

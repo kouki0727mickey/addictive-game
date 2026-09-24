@@ -25,7 +25,15 @@ tags: [music, singing-voice, adaptive-audio, rights]
 | 適応型音楽 | ゲームやアプリで、状況に応じてリアルタイムに変化するBGM |
 
 ## 論点
-- **学習データの権利**: 大手レコード会社と音楽生成AI企業の間で訴訟・和解・ライセンス契約が進んでいる【要確認: 最新状況】
+- **学習データの権利**: 2024年に3大メジャー（UMG・Sony・Warner）がSuno・Udioを著作権侵害で提訴。その後「訴訟 → 和解 → ライセンス提携」の流れが一部で進んでいる[^music]（2026年9月時点）
+  | 当事者 | 状況 |
+  |---|---|
+  | UMG × Udio | 2025年に和解、ライセンス提携（新プラットフォームを2026年に立ち上げ予定と報道） |
+  | Warner × Suno / Udio | 2025年11月までに和解、ライセンス提携。Sunoは今後ライセンス済み楽曲で学習、ダウンロードは有料化と報道 |
+  | Sony × Suno / Udio、UMG × Suno | 係争継続。2026年9月、SonyとUMGはSunoの新モデル「v6」も旧モデルの出力で学習した「同じ毒の木の果実」だとして新たに提訴 |
+  | Suno × BMG、Believe | 2026年8〜9月にライセンス・提携を締結と報道 |
+  | 独立系ミュージシャン・米国音楽家連盟（AFM） | メジャーの和解では小規模権利者が守られないとして、別途集団訴訟や提訴 |
+  - 💡示唆: 「学習用ライセンス市場」が現実に形成されつつあり、今後の音楽AIは**権利処理済みデータで学習していること**が参入条件になる可能性が高い
 - **声の権利**: 歌手の声の無断模倣。パブリシティ権・不正競争の観点で各国で議論・立法
 - **ストリーミングの汚染**: 大量のAI生成楽曲の流入と、再生数の不正操作対策
 - **日本特有**: ボーカロイド文化により「合成された声」への受容度が高い。
@@ -34,3 +42,6 @@ tags: [music, singing-voice, adaptive-audio, rights]
 ## ゲーム・体験との接点
 - 適応型音楽は、生成AIによって「作曲家が作った素材の組み合わせ」から「その場で生成」へ移行しつつある
 - 作曲家の意図（テーマ・モチーフ）を保ちつつ変化させる **「作曲家が制御できる生成」** が鍵
+
+## 参考文献
+[^music]: Variety「Sony Music, Universal Music Group Sue Suno Over Label-Backed Model」https://variety.com/2026/music/news/sony-music-universal-music-sue-suno-label-backed-model-1236866921/ ／ Music Business Worldwide https://www.musicbusinessworldwide.com/universal-and-sony-sue-suno-for-a-second-time-claiming-platforms-v6-models-are-the-fruit-of-the-same-poisoned-tree/ ／ Billboard https://www.billboard.com/pro/what-suno-udio-licensing-deals-mean-future-ai-music/ ／ The Hollywood Reporter（AFM提訴）https://www.hollywoodreporter.com/music/music-industry-news/musicians-union-lawsuit-ai-song-generator-settlement-1236614835/ （確認日: 2026-09-24）

@@ -63,7 +63,11 @@ tags: [games, npc, pcg, liveops, qa]
 
 ## 5. 落とし穴
 - **「AIで作った」ことへのプレイヤーの反発**: 特にアートや声優。使用範囲の開示方針を先に決める
-- **ストアの開示ルール**: 配信プラットフォームによっては生成AI使用の申告を求める。最新の規約を確認【要確認】
+- **ストアの開示ルール**: Steamは2026年1月16日に開発者向けAI開示フォームを改定した[^steam]。
+  - 開示が**必要**: ゲーム本体・ストアページ・マーケティング素材に含まれるAI生成コンテンツ（アート、音声、テキスト、ローカライズ等）→ 自由記述で申告
+  - 開示が**必要**: プレイ中にAIがコンテンツを生成する場合（ランタイム生成）→ チェックボックスで申告
+  - 開示が**不要**: コーディング支援など、開発効率化のためだけに使うAIツール
+  - LLM NPCのようなランタイム生成は必ず申告対象になる点に注意
 - **品質の均質化**: AI生成アセットだけで作ると「どこかで見た」見た目になる
 - **推論コストの無制限化**: 1プレイヤーあたりのコスト上限を設計に組み込む
 
@@ -74,3 +78,6 @@ tags: [games, npc, pcg, liveops, qa]
 - [ ] インジェクション・不適切入力への評価セットを用意したか
 - [ ] 1プレイヤーあたりの推論コストの上限と、上限到達時の挙動を決めたか
 - [ ] 声・見た目を使う場合、権利者の同意と契約条件を確認したか
+
+## 参考文献
+[^steam]: Game Developer「Valve tweaks and clarifies AI disclosure rules for Steam」https://www.gamedeveloper.com/business/valve-tweaks-and-clarifies-ai-disclosure-rules-for-steam ／ VGC https://www.videogameschronicle.com/news/valve-has-significantly-rewritten-steams-rules-for-how-developers-much-disclose-ai-use/ （確認日: 2026-09-24）
