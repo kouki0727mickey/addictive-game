@@ -68,9 +68,10 @@ canvas {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center;
   gap: 14px;
-  padding: 24px 16px;
+  padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
   text-align: center;
   background: radial-gradient(ellipse at center, rgba(7, 7, 26, 0.35), rgba(7, 7, 26, 0.85));
   overflow-y: auto;
@@ -122,6 +123,8 @@ canvas {
 .row {
   display: flex;
   gap: 10px;
+  align-items: center;
+  justify-content: center;
 }
 
 .btn {
@@ -291,5 +294,29 @@ h2 {
   .btn.primary,
   .newbest {
     animation: none;
+  }
+}
+
+/* Short screens (landscape phones): tighten everything so it fits without scrolling. */
+@media (max-height: 520px) {
+  .screen {
+    gap: 8px;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .over-score {
+    font-size: 56px;
+  }
+  .newbest {
+    font-size: 20px;
+  }
+  .mission {
+    padding: 6px 10px;
+  }
+  .btn.primary {
+    padding: 10px 28px;
+  }
+  .logo {
+    font-size: 40px;
   }
 }

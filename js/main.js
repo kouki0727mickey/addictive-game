@@ -15,6 +15,9 @@
   let H = 0;
   let DPR = 1;
   let unit = 1; // pixels per world unit
+  let CX = 0; // screen position of the orbit centre
+  let CY = 0;
+  const HUD_H = 96; // px reserved at the top for the score
 
   // Accessing window.localStorage itself can throw (sandboxed iframes, blocked cookies).
   const storage = (function () {
@@ -40,6 +43,7 @@
   let trail = [];
   let deathTimer = 0;
   let hue = 0;
+  let retryLockUntil = 0; // prevents a panic-tap at death from skipping the results
 
   function resize() {
     DPR = Math.min(window.devicePixelRatio || 1, 2);
@@ -47,7 +51,11 @@
     H = window.innerHeight;
     canvas.width = Math.floor(W * DPR);
     canvas.height = Math.floor(H * DPR);
-    unit = Math.min(W, H);
+    // The outer ring plus player needs ~0.9 units of diameter. Fit that between the HUD and the bottom edge.
+    const availH = H - HUD_H - 8;
+    unit = Math.min(W / 0.95, availH / 0.9, Math.min(W, H));
+    CX = W / 2;
+    CY = HUD_H + availH / 2;
   }
   window.addEventListener('resize', resize);
   resize();
@@ -152,7 +160,9 @@
     const gap = save.best - run.score;
     let tease;
     if (sum.newBest) tease = '記録更新！ +' + (run.score - sum.prevBest);
+    else if (save.best === 0) tease = 'トゲをよけると1点！ タップで内⇄外を切替';
     else if (sum.prevBest === 0 && run.score > 0) tease = '初記録！ 次はこれを超えよう';
+    else if (gap === 0) tease = 'ベストに並んだ！ あと1点で更新！';
     else if (gap <= 5) tease = 'おしい！ あと' + (gap + 1) + '点でベスト更新！';
     else tease = 'ベストまで あと' + (gap + 1) + '点';
     $('over-tease').textContent = tease;
@@ -165,6 +175,7 @@
     $('over-missions').innerHTML =
       sum.completed.map((m) => missionHtml(m, true)).join('') + save.missions.map((m) => missionHtml(m, false)).join('');
     show('over');
+    retryLockUntil = performance.now() + 600;
     if (sum.newBest) Sfx.best();
     else if (sum.completed.length) Sfx.coin();
   }
@@ -192,7 +203,7 @@
       e.preventDefault();
       if (e.repeat) return;
       if (state === 'play') onTap();
-      else if (state === 'menu' || state === 'over') startGame();
+      else if (state === 'menu' || (state === 'over' && performance.now() > retryLockUntil)) startGame();
       else if (state === 'pause') resume();
     }
   });
@@ -212,7 +223,18 @@
   $('btn-resume').addEventListener('click', resume);
 
   $('btn-play').addEventListener('click', startGame);
-  $('btn-retry').addEventListener('click', startGame);
+  $('btn-retry').addEventListener('click', () => {
+    if (performance.now() > retryLockUntil) startGame();
+  });
+  // Tapping empty space on the menu / results starts a run: one less step between tries.
+  ['menu', 'over'].forEach((id) =>
+    $(id).addEventListener('pointerdown', (e) => {
+      if (e.target.closest('button, .missions, .toast')) return;
+      if (id === 'over' && performance.now() < retryLockUntil) return;
+      e.preventDefault();
+      startGame();
+    })
+  );
   $('btn-home').addEventListener('click', () => {
     renderMenu();
     show('menu');
@@ -292,12 +314,12 @@
 
   // ---------- rendering ----------
   function toScreen(x, y) {
-    return [W / 2 + x * unit, H / 2 + y * unit];
+    return [CX + x * unit, CY + y * unit];
   }
 
   function drawBackground(t) {
     const fever = game.fever > 0;
-    const g = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+    const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, Math.max(W, H) * 0.7);
     g.addColorStop(0, fever ? '#2a0b3a' : '#10123a');
     g.addColorStop(1, '#07071a');
     ctx.fillStyle = g;

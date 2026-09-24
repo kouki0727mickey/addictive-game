@@ -18,7 +18,7 @@
     hitForgiveness: 0.75, // <1 makes hitboxes smaller than they look
     baseSpeed: 1.5, // rad/s
     maxSpeed: 3.4,
-    speedPerPoint: 0.01,
+    rampSpikes: 150, // spikes passed until top speed
     switchTime: 0.11, // seconds to move between rings
     spawnAhead: Math.PI * 1.35,
     despawnBehind: 0.8,
@@ -67,6 +67,7 @@
       fever: 0,
       feverCount: 0,
       smashed: 0,
+      passedSpikes: 0,
       alive: true,
       objects: [],
       nextId: 1,
@@ -78,8 +79,10 @@
     return s;
   }
 
+  // 0..1, driven by how far you've got (spikes passed) rather than score,
+  // so collecting gems/multipliers doesn't make the game suddenly faster.
   function difficulty(s) {
-    return clamp(s.score / 160, 0, 1);
+    return clamp(s.passedSpikes / CONFIG.rampSpikes, 0, 1);
   }
 
   function multiplier(s) {
@@ -167,7 +170,7 @@
     const move = dt / CONFIG.switchTime;
     s.ringPos = Math.abs(dir) <= move ? s.ring : s.ringPos + Math.sign(dir) * move;
 
-    s.speed = Math.min(CONFIG.maxSpeed, CONFIG.baseSpeed + s.score * CONFIG.speedPerPoint);
+    s.speed = lerp(CONFIG.baseSpeed, CONFIG.maxSpeed, difficulty(s));
     s.angle += s.speed * dt;
 
     if (s.fever > 0) {
@@ -215,6 +218,7 @@
       if (!o.passed && rel < -0.06) {
         o.passed = true;
         if (o.type === 'spike') {
+          s.passedSpikes++;
           s.score += mult;
           emit(s, 'pass');
           if (o.ring !== s.ring && s.t - s.lastSwitchT < CONFIG.nearMissWindow) {

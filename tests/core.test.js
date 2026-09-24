@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const Core = require('../js/core.js');
-const { play } = require('./bot.js');
+const { play, playHuman } = require('./bot.js');
 
 test('rng is deterministic', () => {
   const a = Core.mulberry32(42);
@@ -56,4 +56,21 @@ test('big dt does not tunnel through spikes', () => {
   const s = Core.createGame(99);
   for (let i = 0; i < 400 && s.alive; i++) Core.step(s, 0.1);
   assert.strictEqual(s.alive, false);
+});
+
+test('a human-like player (200ms reaction, ±60ms jitter) survives the opening 30s', () => {
+  let ok = 0;
+  const N = 60;
+  for (let seed = 1; seed <= N; seed++) if (playHuman(seed, 30, 0.2, 0.06).alive) ok++;
+  assert.ok(ok >= N * 0.95, ok + '/' + N);
+});
+
+test('speed ramps with spikes passed, not with score', () => {
+  const s = Core.createGame(5);
+  s.score = 10000;
+  Core.step(s, 1 / 60);
+  assert.ok(Math.abs(s.speed - Core.CONFIG.baseSpeed) < 1e-9);
+  s.passedSpikes = Core.CONFIG.rampSpikes;
+  Core.step(s, 1 / 60);
+  assert.ok(Math.abs(s.speed - Core.CONFIG.maxSpeed) < 1e-9);
 });
