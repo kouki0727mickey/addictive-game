@@ -42,6 +42,8 @@
   let flash = 0;
   let trail = [];
   let deathTimer = 0;
+  let hitStop = 0; // seconds of frozen time (impact feel)
+  let slowMo = 0; // seconds of slow motion remaining
   let hue = 0;
   let retryLockUntil = 0; // prevents a panic-tap at death from skipping the results
 
@@ -138,9 +140,12 @@
     shake = 0;
     flash = 0;
     deathTimer = 0;
+    hitStop = 0;
+    slowMo = 0;
     show('play');
-    $('hud-score').textContent = '0';
-    $('hud-mult').textContent = '';
+    hudCache.score = -1;
+    hudCache.mult = hudCache.fever = null;
+    updateHud();
   }
 
   function endGame() {
@@ -172,6 +177,12 @@
       '<li>ニアミス <b>' + run.nearMisses + '</b></li>' +
       '<li>🪙 <b>+' + sum.coins + '</b></li>' +
       (sum.levelUps ? '<li>レベルアップ! <b>Lv' + Meta.levelFromXp(save.xp) + '</b></li>' : '');
+    const next = Meta.SKINS.filter((s) => save.owned.indexOf(s.id) === -1).sort((a, b) => a.price - b.price)[0];
+    $('over-unlock').textContent = !next
+      ? ''
+      : save.coins >= next.price
+        ? '🔓 スキン「' + next.name + '」を解放できます！'
+        : '次のスキン「' + next.name + '」まで 🪙' + (next.price - save.coins);
     $('over-missions').innerHTML =
       sum.completed.map((m) => missionHtml(m, true)).join('') + save.missions.map((m) => missionHtml(m, false)).join('');
     show('over');
@@ -286,6 +297,7 @@
           break;
         case 'nearMiss':
           Sfx.nearMiss();
+          slowMo = 0.12;
           popText(e.x, e.y, 'CLOSE!', '#4df3ff', 20);
           break;
         case 'smash':
@@ -307,6 +319,7 @@
           flash = 0.6;
           burst(e.x, e.y, skinColor('color'), 40, 0.7);
           deathTimer = 0.9;
+          hitStop = 0.12;
           break;
       }
     }
@@ -402,6 +415,38 @@
     ctx.restore();
   }
 
+  // First runs only: flash "TAP!" when a spike is coming on the player's ring and the other ring is clear.
+  function drawTutorial(t) {
+    let cur = Infinity;
+    let other = Infinity;
+    for (const o of game.objects) {
+      if (o.type !== 'spike') continue;
+      const rel = o.angle - game.angle;
+      if (rel < 0) continue;
+      if (o.ring === game.ring) cur = Math.min(cur, rel);
+      else other = Math.min(other, rel);
+    }
+    const danger = cur < 0.9 && other > cur + 0.15;
+    // The centre of the orbit is always empty, so hints never collide with popups.
+    const [sx, sy] = toScreen(0, 0);
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (danger) {
+      ctx.font = '900 ' + Math.round(26 + Math.sin(t * 18) * 3) + 'px system-ui, sans-serif';
+      ctx.fillStyle = '#fff';
+      ctx.shadowColor = '#4df3ff';
+      ctx.shadowBlur = 16;
+      ctx.fillText('TAP!', sx, sy);
+    } else if (game.passedSpikes === 0) {
+      ctx.font = '700 15px system-ui, sans-serif';
+      ctx.fillStyle = 'rgba(238,242,255,0.8)';
+      ctx.fillText('タップで', sx, sy - 10);
+      ctx.fillText('内⇄外', sx, sy + 10);
+    }
+    ctx.restore();
+  }
+
   function drawEffects(dt) {
     for (const p of particles) {
       p.x += p.vx * dt;
@@ -434,6 +479,36 @@
     ctx.globalAlpha = 1;
   }
 
+  // DOM writes are relatively expensive: only touch the HUD when something changed.
+  const hudCache = { score: -1, mult: '', fever: '' };
+  function updateHud() {
+    if (game.score !== hudCache.score) {
+      const el = $('hud-score');
+      el.textContent = game.score;
+      if (game.score > hudCache.score && hudCache.score >= 0) {
+        el.classList.remove('bump');
+        void el.offsetWidth; // restart the CSS animation
+        el.classList.add('bump');
+      }
+      hudCache.score = game.score;
+    }
+    const m = Core.multiplier(game) * (game.fever > 0 ? 2 : 1);
+    const multText = m > 1 ? '×' + m + (game.fever > 0 ? ' FEVER' : '') : game.combo >= 2 ? game.combo + ' combo' : '';
+    if (multText !== hudCache.mult) {
+      $('hud-mult').textContent = multText;
+      hudCache.mult = multText;
+    }
+    const on = game.fever > 0;
+    const pct = on ? (game.fever / C.feverDuration) * 100 : ((game.combo % C.feverEvery) / C.feverEvery) * 100;
+    const feverKey = (on ? 'on' : 'off') + Math.round(pct);
+    if (feverKey !== hudCache.fever) {
+      const meter = $('hud-fever');
+      meter.classList.toggle('on', on);
+      meter.firstElementChild.style.width = pct + '%';
+      hudCache.fever = feverKey;
+    }
+  }
+
   let last = performance.now();
   function frame(now) {
     const dt = Math.min(0.05, (now - last) / 1000);
@@ -441,16 +516,21 @@
     hue += dt * 120;
 
     if (state === 'play') {
-      if (game.alive) {
-        Core.step(game, dt);
+      if (hitStop > 0) {
+        hitStop -= dt;
+      } else if (game.alive) {
+        let scale = 1;
+        if (slowMo > 0) {
+          slowMo -= dt;
+          scale = 0.45;
+        }
+        Core.step(game, dt * scale);
       } else {
         deathTimer -= dt;
         if (deathTimer <= 0) endGame();
       }
       handleEvents();
-      $('hud-score').textContent = game.score;
-      const m = Core.multiplier(game) * (game.fever > 0 ? 2 : 1);
-      $('hud-mult').textContent = m > 1 ? '×' + m + (game.fever > 0 ? ' FEVER' : '') : '';
+      updateHud();
     }
 
     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
@@ -467,6 +547,7 @@
         else drawGem(q.x, q.y, now / 1000);
       }
       if (game.alive) drawPlayer();
+      if (state === 'play' && game.alive && save.plays < 3 && game.passedSpikes < 4) drawTutorial(now / 1000);
     }
     drawEffects(dt);
     ctx.restore();

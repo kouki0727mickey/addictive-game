@@ -320,3 +320,42 @@ h2 {
     font-size: 40px;
   }
 }
+
+#hud-score.bump {
+  animation: bump 0.18s ease-out;
+}
+
+@keyframes bump {
+  40% {
+    transform: scale(1.18);
+  }
+}
+
+.fever-meter {
+  width: 120px;
+  height: 5px;
+  margin: 4px auto 0;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.fever-meter i {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #ffc94d, #ff7ad9);
+  transition: width 0.15s;
+}
+
+.fever-meter.on i {
+  background: #ff7ad9;
+  box-shadow: 0 0 10px #ff7ad9;
+  transition: none;
+}
+
+.unlock {
+  color: var(--gold);
+  font-size: 14px;
+  font-weight: 700;
+}
