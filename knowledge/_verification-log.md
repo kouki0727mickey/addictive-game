@@ -43,7 +43,7 @@
 | ethics-legal | Character.AI和解 | B | CNN、CNBC（検索結果） | 正しかった。2026年1月7日の裁判所提出書面、4州5件、条件非公開・責任は認めず、を追記 |
 | games | Steam AI開示ルール | B | Game Developer の本文 | 正しかった。Steamworksの公式文書はログインが必要で未確認 |
 | ethics-legal | ROSS控訴審 | B | 複数の法律事務所の解説 | 2026年9月時点で判決はまだ |
-| ethics-legal | 米ニューヨーク州のAIコンパニオン法 | **C** | 解説記事のみ | 3時間ごとの通知の対象（全利用者か未成年のみか）が解説によって分かれる。州議会サイトはボット対策で取得できず。`【要確認】` を付けた |
+| ethics-legal | 米ニューヨーク州のAIコンパニオン法 | B | 条文（一般事業法1702条、Justia掲載）の文言を検索結果で確認。本文ページはネットワーク許可外で未取得 | **解消**: 通知は**未成年に限らず全利用者**が対象（開始時は1日1回まで、継続中は3時間ごと）。未成年に限定していたのはカリフォルニア州法で、解説記事が両者を混同していた。対応手順の対象に「他人への身体的・経済的な危害」も含まれることを追記 |
 
 ### 取得できなかったサイト（ボット対策やネットワーク許可外）
 sagaftra.org、nysenate.gov、congress.gov、governor.ny.gov、indiewire.com、cac.gov.cn（正しいURLが未特定）。次回はブラウザ機能を使うか、別の公式ミラーを探す。
@@ -51,7 +51,6 @@ sagaftra.org、nysenate.gov、congress.gov、governor.ny.gov、indiewire.com、c
 ## 追跡中の案件（結果が出たら更新）
 - Thomson Reuters v. ROSS 第3巡回区判決（AI学習のフェアユースに関する初の連邦控訴審判断）
 - UMG・Sony v. Suno（v6モデルを対象とした2026年9月の新訴訟を含む）
-- ニューヨーク州AIコンパニオン法の条文確認（3時間通知の対象）
 - NO FAKES Act の本会議審議
 - EU AI Act 第50条の実務指針・行動規範（Code of Practice）の最終版
 - 日本の不正競争防止法改正（声の保護）の検討状況
