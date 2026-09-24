@@ -73,6 +73,24 @@ function serve() {
     await page.click('#btn-home');
     if (!/BEST|NEW/.test(await page.textContent('#daily-best'))) errors.push(vp.name + ': daily best not shown on menu');
 
+    // shop: grant coins, the badge appears, buying equips the skin and deducts coins
+    await page.evaluate(() => {
+      const k = 'orbit-switch-save-v1';
+      const sv = JSON.parse(localStorage.getItem(k));
+      sv.coins = 100;
+      localStorage.setItem(k, JSON.stringify(sv));
+    });
+    await page.reload();
+    if (!(await page.$eval('#btn-shop', (b) => b.classList.contains('badge')))) errors.push(vp.name + ': shop badge missing with 100 coins');
+    await page.click('#btn-shop');
+    await page.click('.skin[data-id="lime"]'); // too expensive
+    if (!/足りません/.test(await page.textContent('#shop-msg'))) errors.push(vp.name + ': no feedback for unaffordable skin');
+    await page.click('.skin[data-id="sakura"]');
+    const after = await page.evaluate(() => JSON.parse(localStorage.getItem('orbit-switch-save-v1')));
+    if (after.skin !== 'sakura' || after.coins !== 20) errors.push(vp.name + ': purchase failed ' + JSON.stringify({ skin: after.skin, coins: after.coins }));
+    await page.screenshot({ path: path.join(outDir, vp.name + '-shop-bought.png') });
+    await page.click('#shop .btn-back');
+
     // reload: progress must persist
     const plays = await page.evaluate(() => JSON.parse(localStorage.getItem('orbit-switch-save-v1')).plays);
     if (plays !== 2) errors.push(vp.name + ': expected plays=2 after two runs, got ' + plays);

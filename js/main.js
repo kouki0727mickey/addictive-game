@@ -89,6 +89,9 @@
     $('menu-level').textContent = lp.level;
     $('menu-xp').style.width = Math.round((lp.into / lp.need) * 100) + '%';
     $('btn-mute').textContent = save.muted ? '🔇' : '🔊';
+    // A badge pulls players into the shop the moment they can afford something.
+    const canBuy = Meta.SKINS.some((s) => save.owned.indexOf(s.id) === -1 && save.coins >= s.price);
+    $('btn-shop').classList.toggle('badge', canBuy);
     const db = Meta.dailyBest(save, Meta.today(Date.now()));
     $('daily-best').textContent = db > 0 ? 'BEST ' + db : 'NEW';
   }
@@ -110,6 +113,7 @@
 
   function renderMissions() {
     $('mission-list').innerHTML = save.missions.map((m) => missionHtml(m, false)).join('');
+    $('lifetime').textContent = '通算 ' + save.plays + ' プレイ ・ ジェム ' + save.totalGems + ' 個 ・ Lv ' + Meta.levelFromXp(save.xp);
   }
 
   function renderShop() {
@@ -117,11 +121,12 @@
     $('shop-msg').textContent = '';
     $('shop-list').innerHTML = Meta.SKINS.map((s) => {
       const owned = save.owned.indexOf(s.id) !== -1;
+      const affordable = !owned && save.coins >= s.price;
       const bg = s.color === 'rainbow' ? 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' : s.color;
       return (
-        '<button class="skin' + (save.skin === s.id ? ' selected' : '') + (owned ? '' : ' locked') + '" data-id="' + s.id + '" aria-pressed="' + (save.skin === s.id) + '">' +
+        '<button class="skin' + (save.skin === s.id ? ' selected' : '') + (owned ? '' : affordable ? ' affordable' : ' locked') + '" data-id="' + s.id + '" aria-pressed="' + (save.skin === s.id) + '">' +
         '<span class="dot" style="background:' + bg + '"></span>' + s.name +
-        '<small>' + (owned ? (save.skin === s.id ? '使用中' : '所持') : '🪙' + s.price) + '</small></button>'
+        '<small>' + (owned ? (save.skin === s.id ? '使用中' : '所持') : (affordable ? '購入 ' : '') + '🪙' + s.price) + '</small></button>'
       );
     }).join('');
   }
@@ -145,15 +150,18 @@
 
   // ---------- game flow ----------
   let mode = 'normal'; // normal | daily
-  function currentBest() {
-    return mode === 'daily' ? Meta.dailyBest(save, Meta.today(Date.now())) : save.best;
-  }
+  // Captured when a run starts: a daily run that crosses midnight still belongs to the day
+  // (and stage) it started on, and the HUD doesn't rebuild a date string every frame.
+  let runDay = '';
+  let runBest = 0;
 
   function startGame(nextMode) {
     if (nextMode === 'normal' || nextMode === 'daily') mode = nextMode;
     Sfx.unlock();
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    const seed = mode === 'daily' ? Meta.dailySeed(Meta.today(Date.now())) : (Date.now() ^ (Math.random() * 1e9)) >>> 0;
+    runDay = Meta.today(Date.now());
+    runBest = mode === 'daily' ? Meta.dailyBest(save, runDay) : save.best;
+    const seed = mode === 'daily' ? Meta.dailySeed(runDay) : (Date.now() ^ (Math.random() * 1e9)) >>> 0;
     game = Core.createGame(seed);
     particles = [];
     texts = [];
@@ -181,7 +189,7 @@
     };
     const sum = Meta.applyRun(save, run);
     // In daily mode, "best" means today's challenge best.
-    const rec = mode === 'daily' ? Meta.recordDaily(save, Meta.today(Date.now()), run.score) : { prevBest: sum.prevBest, best: save.best, newBest: sum.newBest };
+    const rec = mode === 'daily' ? Meta.recordDaily(save, runDay, run.score) : { prevBest: sum.prevBest, best: save.best, newBest: sum.newBest };
     Meta.persist(storage, save);
 
     $('over-mode').classList.toggle('hidden', mode !== 'daily');
@@ -201,6 +209,7 @@
       '<li>ジェム <b>' + run.gems + '</b></li>' +
       '<li>最大コンボ <b>' + run.bestCombo + '</b></li>' +
       '<li>ニアミス <b>' + run.nearMisses + '</b></li>' +
+      (game.smashed ? '<li>粉砕 <b>' + game.smashed + '</b></li>' : '') +
       '<li>🪙 <b id="over-coins">+0</b></li>' +
       (sum.levelUps ? '<li>レベルアップ! <b>Lv' + Meta.levelFromXp(save.xp) + '</b></li>' : '');
     const next = Meta.SKINS.filter((s) => save.owned.indexOf(s.id) === -1).sort((a, b) => a.price - b.price)[0];
@@ -237,7 +246,7 @@
     const url = /^https?:/.test(window.location.protocol) ? window.location.origin + window.location.pathname : '';
     const text =
       mode === 'daily'
-        ? 'ORBIT SWITCH 今日のチャレンジ（' + Meta.today(Date.now()) + '）で ' + score + '点！ 同じステージで勝負しよう #ORBITSWITCH'
+        ? 'ORBIT SWITCH 今日のチャレンジ（' + runDay + '）で ' + score + '点！ 同じステージで勝負しよう #ORBITSWITCH'
         : 'ORBIT SWITCH で ' + score + '点！（ベスト ' + save.best + '）タップだけの中毒ゲーム #ORBITSWITCH';
     const toast = (msg) => {
       const t = $('share-toast');
@@ -372,7 +381,7 @@
     for (let i = 0; i < n; i++) {
       const a = Math.random() * Math.PI * 2;
       const v = (0.2 + Math.random()) * speed;
-      particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.6 + Math.random() * 0.4, max: 1, color });
+      particles.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.6 + Math.random() * 0.4, color });
     }
   }
 
@@ -652,7 +661,7 @@
   function updateHud() {
     checkMissionsLive();
     // Chasing your best is the core hook: show it, and celebrate the moment you pass it.
-    const best = currentBest();
+    const best = runBest;
     const beaten = best > 0 && game.score > best;
     const bestText = best === 0 ? '' : beaten ? 'NEW BEST!' : (mode === 'daily' ? '📅 BEST ' : 'BEST ') + best;
     if (bestText !== hudCache.best) {

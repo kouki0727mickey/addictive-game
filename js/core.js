@@ -66,7 +66,6 @@
       bestCombo: 0,
       gems: 0,
       nearMisses: 0,
-      switches: 0,
       fever: 0,
       grace: 0,
       feverCount: 0,
@@ -186,7 +185,6 @@
     if (!s.alive) return;
     s.ring = 1 - s.ring;
     s.lastSwitchT = s.t;
-    s.switches++;
     emit(s, 'switch', { ring: s.ring });
   }
 
@@ -259,7 +257,6 @@
         if (o.type === 'spike') {
           s.passedSpikes++;
           s.score += mult;
-          emit(s, 'pass');
           if (o.ring !== s.ring && s.t - s.lastSwitchT < CONFIG.nearMissWindow) {
             s.nearMisses++;
             s.score += 2 * mult;

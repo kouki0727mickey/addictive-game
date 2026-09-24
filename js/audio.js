@@ -46,9 +46,6 @@
     setMuted(m) {
       muted = m;
     },
-    isMuted() {
-      return muted;
-    },
     switch() {
       tone(520, 0.05, 'triangle', 0.12, 700);
     },
