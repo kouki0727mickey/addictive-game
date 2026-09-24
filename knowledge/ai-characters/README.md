@@ -8,6 +8,8 @@ tags: [ai-character, npc, llm, engagement, focus-area]
 
 # AIキャラクター・会話NPC（重点領域）
 
+> English edition: [../en/ai-characters/](../en/ai-characters/README.md)
+
 このナレッジベースが「世界一」を最初に取りにいく領域。
 対象は、**LLMで会話し、記憶を持ち、プレイヤーと関係を築くキャラクター**全般
 （ゲームNPC、AIコンパニオン、AI VTuber、公式IPキャラのAI化）。

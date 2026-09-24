@@ -1,5 +1,7 @@
 # addictive-game
 
+> English: the focus area on AI characters and conversational NPCs is available in English at [knowledge/en/ai-characters](knowledge/en/ai-characters/README.md).
+
 **AI × エンターテイメントの世界一のナレッジベース**を目指すリポジトリ。
 
 ゲーム・映像・音楽・アニメ・ライブ・インタラクティブ物語など、エンタメのあらゆる領域で
@@ -41,6 +43,7 @@ knowledge/
 │   └── business-models.md     収益モデル・コスト構造・参入戦略
 ├── ethics-legal/
 │   └── ethics-legal.md        著作権・肖像/声・依存性・透明性
+├── en/ai-characters/          重点領域の英語版（English edition）
 ├── glossary.md                用語集
 └── _verification-log.md       事実確認ログ
 templates/
