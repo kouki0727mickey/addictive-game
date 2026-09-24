@@ -72,14 +72,43 @@
     }
   }
 
+  function num(v, fallback) {
+    return typeof v === 'number' && isFinite(v) && v >= 0 ? v : fallback;
+  }
+
+  // Repair anything a stale, hand-edited or corrupt save could contain.
+  function sanitize(raw) {
+    const d = defaultSave();
+    if (!raw || typeof raw !== 'object') return d;
+    for (const k of ['best', 'coins', 'xp', 'plays', 'totalGems', 'missionTier', 'streak']) d[k] = Math.floor(num(raw[k], d[k]));
+    d.muted = raw.muted === true;
+    d.lastDay = typeof raw.lastDay === 'string' ? raw.lastDay : null;
+    if (Array.isArray(raw.owned)) {
+      d.owned = raw.owned.filter((id) => SKINS.some((s) => s.id === id));
+      if (d.owned.indexOf('neon') === -1) d.owned.unshift('neon');
+    }
+    d.skin = d.owned.indexOf(raw.skin) !== -1 ? raw.skin : 'neon';
+    if (Array.isArray(raw.missions)) {
+      d.missions = raw.missions
+        .filter((m) => m && MISSION_POOL.some((p) => p.kind === m.kind) && num(m.goal, 0) > 0)
+        .slice(0, 3)
+        .map((m) => {
+          const def = MISSION_POOL.find((p) => p.kind === m.kind);
+          return { kind: m.kind, goal: m.goal, progress: num(m.progress, 0), reward: num(m.reward, 15), text: def.text.replace('{n}', m.goal), cumulative: !!def.cumulative };
+        });
+    }
+    return d;
+  }
+
   function load(storage, rng) {
-    let save = defaultSave();
+    let raw = null;
     try {
-      const raw = storage && storage.getItem(KEY);
-      if (raw) save = Object.assign(save, JSON.parse(raw));
+      const str = storage && storage.getItem(KEY);
+      if (str) raw = JSON.parse(str);
     } catch (e) {
       /* corrupt or unavailable storage: start fresh */
     }
+    const save = sanitize(raw);
     fillMissions(save, rng || Math.random);
     return save;
   }
@@ -167,5 +196,5 @@
     return true;
   }
 
-  return { KEY, SKINS, MISSION_POOL, defaultSave, load, persist, levelFromXp, levelProgress, checkDaily, applyRun, buySkin, today, dayDiff };
+  return { KEY, SKINS, MISSION_POOL, defaultSave, sanitize, load, persist, levelFromXp, levelProgress, checkDaily, applyRun, buySkin, today, dayDiff };
 });

@@ -93,6 +93,9 @@ canvas {
 .tagline {
   color: var(--muted);
   margin: 0;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
 }
 
 .stats {

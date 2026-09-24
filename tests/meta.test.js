@@ -81,3 +81,23 @@ test('missions complete and refill', () => {
   assert.strictEqual(s.missions.length, 3);
   assert.ok(before.length === 3);
 });
+
+test('sanitize repairs hostile / broken saves', () => {
+  const s = Meta.sanitize({ coins: 'lots', best: -5, xp: NaN, owned: 'neon', skin: 'hacker', missions: [{ kind: 'score', goal: 20, progress: 3, text: '<img src=x onerror=alert(1)>' }, { kind: 'nope', goal: 1 }] });
+  assert.strictEqual(s.coins, 0);
+  assert.strictEqual(s.best, 0);
+  assert.strictEqual(s.xp, 0);
+  assert.deepStrictEqual(s.owned, ['neon']);
+  assert.strictEqual(s.skin, 'neon');
+  assert.strictEqual(s.missions.length, 1);
+  assert.ok(!s.missions[0].text.includes('<'));
+  assert.deepStrictEqual(Meta.sanitize(null), Meta.defaultSave());
+  assert.deepStrictEqual(Meta.sanitize(42), Meta.defaultSave());
+});
+
+test('load tolerates a storage that throws', () => {
+  const bad = { getItem() { throw new Error('SecurityError'); }, setItem() { throw new Error('QuotaExceeded'); } };
+  const s = Meta.load(bad, rng);
+  assert.strictEqual(s.missions.length, 3);
+  Meta.persist(bad, s); // must not throw
+});

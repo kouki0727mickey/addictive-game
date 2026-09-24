@@ -191,8 +191,9 @@
           s.gems++;
           s.combo++;
           s.bestCombo = Math.max(s.bestCombo, s.combo);
-          s.score += 2 * mult;
-          emit(s, 'gem', { x: q.x, y: q.y, combo: s.combo, mult });
+          const points = 2 * mult;
+          s.score += points;
+          emit(s, 'gem', { x: q.x, y: q.y, combo: s.combo, points });
           if (s.combo % CONFIG.feverEvery === 0) {
             s.fever = CONFIG.feverDuration;
             s.feverCount++;

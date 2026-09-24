@@ -16,10 +16,20 @@
   let DPR = 1;
   let unit = 1; // pixels per world unit
 
-  const save = Meta.load(window.localStorage);
+  // Accessing window.localStorage itself can throw (sandboxed iframes, blocked cookies).
+  const storage = (function () {
+    try {
+      const s = window.localStorage;
+      s.getItem('probe');
+      return s;
+    } catch (e) {
+      return null;
+    }
+  })();
+  const save = Meta.load(storage);
   Sfx.setMuted(save.muted);
   const dailyBonus = Meta.checkDaily(save, Date.now());
-  Meta.persist(window.localStorage, save);
+  Meta.persist(storage, save);
 
   let state = 'menu'; // menu | play | over | shop | missions
   let game = Core.createGame(Date.now());
@@ -53,8 +63,8 @@
 
   // ---------- screens ----------
   function show(name) {
-    ['menu', 'over', 'shop', 'missions'].forEach((id) => $(id).classList.toggle('hidden', id !== name));
-    $('hud').classList.toggle('hidden', name !== 'play');
+    ['menu', 'over', 'shop', 'missions', 'pause'].forEach((id) => $(id).classList.toggle('hidden', id !== name));
+    $('hud').classList.toggle('hidden', name !== 'play' && name !== 'pause');
     state = name;
   }
 
@@ -67,13 +77,17 @@
     $('btn-mute').textContent = save.muted ? '🔇' : '🔊';
   }
 
+  function esc(v) {
+    return String(v).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+  }
+
   function missionHtml(m, done) {
     const pct = Math.min(100, Math.round((m.progress / m.goal) * 100));
     return (
       '<div class="mission' + (done ? ' done' : '') + '">' +
-      '<span class="reward">🪙' + m.reward + '</span>' +
-      (done ? '✅ ' : '') + m.text +
-      ' <small>(' + Math.min(m.progress, m.goal) + '/' + m.goal + ')</small>' +
+      '<span class="reward">🪙' + esc(m.reward) + '</span>' +
+      (done ? '✅ ' : '') + esc(m.text) +
+      ' <small>(' + esc(Math.min(m.progress, m.goal)) + '/' + esc(m.goal) + ')</small>' +
       '<div class="bar"><i style="width:' + pct + '%"></i></div></div>'
     );
   }
@@ -100,7 +114,7 @@
     if (!b) return;
     if (Meta.buySkin(save, b.dataset.id)) {
       Sfx.coin();
-      Meta.persist(window.localStorage, save);
+      Meta.persist(storage, save);
     }
     renderShop();
   });
@@ -108,6 +122,7 @@
   // ---------- game flow ----------
   function startGame() {
     Sfx.unlock();
+    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
     game = Core.createGame((Date.now() ^ (Math.random() * 1e9)) >>> 0);
     particles = [];
     texts = [];
@@ -129,13 +144,18 @@
       feverCount: game.feverCount,
     };
     const sum = Meta.applyRun(save, run);
-    Meta.persist(window.localStorage, save);
+    Meta.persist(storage, save);
 
     $('over-score').textContent = run.score;
     $('over-best').textContent = save.best;
     $('over-newbest').classList.toggle('hidden', !sum.newBest);
     const gap = save.best - run.score;
-    $('over-tease').textContent = sum.newBest ? '記録更新！' : gap <= 5 ? 'あと' + (gap + 1) + '点でベスト更新！' : 'ベストまで あと' + (gap + 1) + '点';
+    let tease;
+    if (sum.newBest) tease = '記録更新！ +' + (run.score - sum.prevBest);
+    else if (sum.prevBest === 0 && run.score > 0) tease = '初記録！ 次はこれを超えよう';
+    else if (gap <= 5) tease = 'おしい！ あと' + (gap + 1) + '点でベスト更新！';
+    else tease = 'ベストまで あと' + (gap + 1) + '点';
+    $('over-tease').textContent = tease;
     $('over-details').innerHTML =
       '<li>ジェム <b>' + run.gems + '</b></li>' +
       '<li>最大コンボ <b>' + run.bestCombo + '</b></li>' +
@@ -161,12 +181,35 @@
     onTap();
   });
   window.addEventListener('keydown', (e) => {
+    if (e.code === 'Escape' || e.code === 'KeyP') {
+      if (state === 'play') pause();
+      else if (state === 'pause') resume();
+      return;
+    }
     if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'ArrowDown' || e.code === 'Enter') {
+      // Let focused buttons handle Space/Enter themselves in menus.
+      if (state !== 'play' && e.target.closest && e.target.closest('button')) return;
       e.preventDefault();
+      if (e.repeat) return;
       if (state === 'play') onTap();
       else if (state === 'menu' || state === 'over') startGame();
+      else if (state === 'pause') resume();
     }
   });
+
+  function pause() {
+    if (state === 'play' && game.alive) show('pause');
+  }
+  function resume() {
+    if (state !== 'pause') return;
+    last = performance.now();
+    show('play');
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) pause();
+  });
+  window.addEventListener('blur', pause);
+  $('btn-resume').addEventListener('click', resume);
 
   $('btn-play').addEventListener('click', startGame);
   $('btn-retry').addEventListener('click', startGame);
@@ -191,7 +234,7 @@
   $('btn-mute').addEventListener('click', () => {
     save.muted = !save.muted;
     Sfx.setMuted(save.muted);
-    Meta.persist(window.localStorage, save);
+    Meta.persist(storage, save);
     renderMenu();
   });
 
@@ -217,7 +260,7 @@
         case 'gem':
           Sfx.gem(e.combo);
           burst(e.x, e.y, '#ffc94d', 10, 0.35);
-          popText(e.x, e.y, '+' + 2 * e.mult * (game.fever > 0 ? 2 : 1), '#ffc94d');
+          popText(e.x, e.y, '+' + e.points, '#ffc94d');
           break;
         case 'nearMiss':
           Sfx.nearMiss();
@@ -356,9 +399,12 @@
     for (const tx of texts) {
       tx.life -= dt;
       tx.y -= dt * 0.08;
-      const [sx, sy] = toScreen(tx.x, tx.y);
+      let [sx, sy] = toScreen(tx.x, tx.y);
       ctx.globalAlpha = Math.max(0, Math.min(1, tx.life * 2));
       ctx.font = '800 ' + tx.size + 'px system-ui, sans-serif';
+      const half = ctx.measureText(tx.text).width / 2 + 8;
+      sx = Math.min(W - half, Math.max(half, sx));
+      sy = Math.min(H - tx.size, Math.max(tx.size, sy));
       ctx.fillStyle = tx.color;
       ctx.fillText(tx.text, sx, sy);
     }
@@ -392,7 +438,7 @@
       shake = Math.max(0, shake - dt * 40);
     }
     drawBackground(now / 1000);
-    if (state === 'play' || state === 'over') {
+    if (state === 'play' || state === 'over' || state === 'pause') {
       for (const o of game.objects) {
         const q = Core.objectPos(o);
         if (o.type === 'spike') drawSpike(q.x, q.y, o.angle, o.ring);
