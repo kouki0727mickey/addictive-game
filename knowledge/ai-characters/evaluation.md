@@ -115,6 +115,8 @@ LLMの発言内容ではなく、**ゲームの状態（所持品・クエスト
 - 規制の変更（→ [ethics-legal](../ethics-legal/ethics-legal.md)）があれば、1層目の項目を見直す
 
 ## 💡 Phase 3で検証する仮説
+> 実験環境: [prototype/](../../prototype/README.md) ／ 記録: [experiments/](../../experiments/2026-09-24-npc-robustness.md)
+
 - 判定器の分離（P17）で、2層目の攻撃の成功率がどれだけ下がるか
 - 小型モデルと大型モデルで、2層目の結果がどれだけ違うか
 - 「覚えていてくれた瞬間」の回数と自発的な再訪は相関するか

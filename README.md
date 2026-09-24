@@ -45,6 +45,8 @@ knowledge/
 └── _verification-log.md       事実確認ログ
 templates/
 └── knowledge-entry.md         新規記事テンプレート
+prototype/                     会話NPCの堅牢性を測る実験環境（Python）
+experiments/                   実験記録（一次情報）
 ```
 
 ## 成熟度レベル
