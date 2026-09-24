@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+import time
 from typing import Protocol
 
 
@@ -37,9 +38,11 @@ class AnthropicBackend:
         self.model = model
         self.effort = effort
         self.name = f"anthropic:{model}"
+        self.stats = {"calls": 0, "input_tokens": 0, "output_tokens": 0, "seconds": 0.0}
 
     def generate(self, system: str, messages: list[dict], schema: dict) -> dict:
         schema = {k: v for k, v in schema.items() if k != "title"}
+        started = time.monotonic()
         response = self.client.messages.create(
             model=self.model,
             max_tokens=2048,
@@ -52,6 +55,10 @@ class AnthropicBackend:
             extra_headers={"anthropic-beta": "server-side-fallback-2026-07-01"},
             extra_body={"fallbacks": "default"},
         )
+        self.stats["calls"] += 1
+        self.stats["seconds"] += time.monotonic() - started
+        self.stats["input_tokens"] += response.usage.input_tokens
+        self.stats["output_tokens"] += response.usage.output_tokens
         if response.stop_reason == "refusal":
             raise RefusalError(str(getattr(response, "stop_details", "")))
         text = "".join(b.text for b in response.content if b.type == "text")

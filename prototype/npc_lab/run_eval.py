@@ -93,6 +93,14 @@ def main() -> None:
 
     backend = MockBackend() if args.backend == "mock" else AnthropicBackend(args.model, args.effort)
     md = to_markdown(evaluate(backend, args.trials), backend.name, args.trials)
+    stats = getattr(backend, "stats", None)
+    if stats and stats["calls"]:
+        n = stats["calls"]
+        md += (
+            f"\n- API呼び出し: {n}回、入力 {stats['input_tokens']:,} トークン、"
+            f"出力 {stats['output_tokens']:,} トークン\n"
+            f"- 1呼び出しあたりの平均待ち時間: {stats['seconds'] / n:.2f} 秒\n"
+        )
     print(md)
     if args.out:
         with open(args.out, "w") as f:
