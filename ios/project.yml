@@ -2,6 +2,7 @@
 name: OrbitSwitch
 options:
   bundleIdPrefix: com.orbitswitch
+  developmentLanguage: en
   deploymentTarget:
     iOS: "16.0"
 settings:

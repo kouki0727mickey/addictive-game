@@ -5,6 +5,7 @@
   const Core = window.OrbitCore;
   const Meta = window.OrbitMeta;
   const Sfx = window.Sfx;
+  const I18n = window.OrbitI18n;
   const C = Core.CONFIG;
 
   const canvas = document.getElementById('game');
@@ -30,6 +31,22 @@
     }
   })();
   const save = Meta.load(storage);
+
+  // ---------- language ----------
+  let lang = 'en';
+  let T = I18n.create(lang);
+  function setLanguage() {
+    lang = I18n.resolve(save.lang, navigator.languages || [navigator.language]);
+    T = I18n.create(lang);
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach((el) => (el.textContent = T(el.dataset.i18n)));
+    document.querySelectorAll('[data-i18n-html]').forEach((el) => (el.innerHTML = T(el.dataset.i18nHtml))); // our own constant strings
+    document.querySelectorAll('[data-i18n-aria]').forEach((el) => el.setAttribute('aria-label', T(el.dataset.i18nAria)));
+    $('btn-lang').textContent = lang === 'ja' ? 'EN' : 'JA';
+  }
+  setLanguage();
+  const missionText = (m) => T('mission.' + m.kind, { n: m.goal });
+  const skinName = (s) => T('skin.' + s.id);
   Sfx.setMuted(save.muted);
   const dailyBonus = Meta.checkDaily(save, Date.now());
   Meta.persist(storage, save);
@@ -93,7 +110,7 @@
     const canBuy = Meta.SKINS.some((s) => save.owned.indexOf(s.id) === -1 && save.coins >= s.price);
     $('btn-shop').classList.toggle('badge', canBuy);
     const db = Meta.dailyBest(save, Meta.today(Date.now()));
-    $('daily-best').textContent = db > 0 ? 'BEST ' + db : 'NEW';
+    $('daily-best').textContent = db > 0 ? 'BEST ' + db : T('menu.new');
   }
 
   function esc(v) {
@@ -105,7 +122,7 @@
     return (
       '<div class="mission' + (done ? ' done' : '') + '">' +
       '<span class="reward">🪙' + esc(m.reward) + '</span>' +
-      (done ? '✅ ' : '') + esc(m.text) +
+      (done ? '✅ ' : '') + esc(missionText(m)) +
       ' <small>(' + esc(Math.min(m.progress, m.goal)) + '/' + esc(m.goal) + ')</small>' +
       '<div class="bar"><i style="width:' + pct + '%"></i></div></div>'
     );
@@ -113,7 +130,7 @@
 
   function renderMissions() {
     $('mission-list').innerHTML = save.missions.map((m) => missionHtml(m, false)).join('');
-    $('lifetime').textContent = '通算 ' + save.plays + ' プレイ ・ ジェム ' + save.totalGems + ' 個 ・ Lv ' + Meta.levelFromXp(save.xp);
+    $('lifetime').textContent = T('missions.lifetime', { plays: save.plays, gems: save.totalGems, level: Meta.levelFromXp(save.xp) });
   }
 
   function renderShop() {
@@ -125,8 +142,8 @@
       const bg = s.color === 'rainbow' ? 'conic-gradient(red,orange,yellow,lime,cyan,blue,magenta,red)' : s.color;
       return (
         '<button class="skin' + (save.skin === s.id ? ' selected' : '') + (owned ? '' : affordable ? ' affordable' : ' locked') + '" data-id="' + s.id + '" aria-pressed="' + (save.skin === s.id) + '">' +
-        '<span class="dot" style="background:' + bg + '"></span>' + s.name +
-        '<small>' + (owned ? (save.skin === s.id ? '使用中' : '所持') : (affordable ? '購入 ' : '') + '🪙' + s.price) + '</small></button>'
+        '<span class="dot" style="background:' + bg + '"></span>' + esc(skinName(s)) +
+        '<small>' + (owned ? T(save.skin === s.id ? 'shop.equipped' : 'shop.owned') : (affordable ? T('shop.buy') + ' ' : '') + '🪙' + s.price) + '</small></button>'
       );
     }).join('');
   }
@@ -141,7 +158,7 @@
       renderShop();
     } else {
       const skinDef = Meta.SKINS.find((s) => s.id === id);
-      $('shop-msg').textContent = 'コインが足りません（あと 🪙' + (skinDef.price - save.coins) + '）— プレイして集めよう！';
+      $('shop-msg').textContent = T('shop.notEnough', { n: skinDef.price - save.coins });
       b.classList.remove('nope');
       void b.offsetWidth;
       b.classList.add('nope');
@@ -194,30 +211,30 @@
 
     $('over-mode').classList.toggle('hidden', mode !== 'daily');
     $('over-score').textContent = run.score;
-    $('over-best').textContent = rec.best + (mode === 'daily' ? '（' + save.daily.tries + '回目）' : '');
+    $('over-best').textContent = rec.best + (mode === 'daily' ? T('over.try', { n: save.daily.tries }) : '');
     $('over-newbest').classList.toggle('hidden', !rec.newBest);
     const gap = rec.best - run.score;
     let tease;
-    if (rec.newBest) tease = '記録更新！ +' + (run.score - rec.prevBest);
-    else if (rec.best === 0) tease = 'トゲをよけると1点！ タップで内⇄外を切替';
-    else if (rec.prevBest === 0 && run.score > 0) tease = '初記録！ 次はこれを超えよう';
-    else if (gap === 0) tease = 'ベストに並んだ！ あと1点で更新！';
-    else if (gap <= 5) tease = 'おしい！ あと' + (gap + 1) + '点でベスト更新！';
-    else tease = 'ベストまで あと' + (gap + 1) + '点';
+    if (rec.newBest) tease = T('over.tease.newBest', { n: run.score - rec.prevBest });
+    else if (rec.best === 0) tease = T('over.tease.zero');
+    else if (rec.prevBest === 0 && run.score > 0) tease = T('over.tease.first');
+    else if (gap === 0) tease = T('over.tease.tied');
+    else if (gap <= 5) tease = T('over.tease.close', { n: gap + 1 });
+    else tease = T('over.tease.far', { n: gap + 1 });
     $('over-tease').textContent = tease;
     $('over-details').innerHTML =
-      '<li>ジェム <b>' + run.gems + '</b></li>' +
-      '<li>最大コンボ <b>' + run.bestCombo + '</b></li>' +
-      '<li>ニアミス <b>' + run.nearMisses + '</b></li>' +
-      (game.smashed ? '<li>粉砕 <b>' + game.smashed + '</b></li>' : '') +
+      '<li>' + T('over.gems') + ' <b>' + run.gems + '</b></li>' +
+      '<li>' + T('over.bestCombo') + ' <b>' + run.bestCombo + '</b></li>' +
+      '<li>' + T('over.nearMisses') + ' <b>' + run.nearMisses + '</b></li>' +
+      (game.smashed ? '<li>' + T('over.smashed') + ' <b>' + game.smashed + '</b></li>' : '') +
       '<li>🪙 <b id="over-coins">+0</b></li>' +
-      (sum.levelUps ? '<li>レベルアップ! <b>Lv' + Meta.levelFromXp(save.xp) + '</b></li>' : '');
+      (sum.levelUps ? '<li>' + T('over.levelUp') + ' <b>Lv' + Meta.levelFromXp(save.xp) + '</b></li>' : '');
     const next = Meta.SKINS.filter((s) => save.owned.indexOf(s.id) === -1).sort((a, b) => a.price - b.price)[0];
     $('over-unlock').textContent = !next
       ? ''
       : save.coins >= next.price
-        ? '🔓 スキン「' + next.name + '」を解放できます！'
-        : '次のスキン「' + next.name + '」まで 🪙' + (next.price - save.coins);
+        ? T('over.canUnlock', { name: skinName(next) })
+        : T('over.nextUnlock', { name: skinName(next), n: next.price - save.coins });
     $('over-missions').innerHTML =
       sum.completed.map((m) => missionHtml(m, true)).join('') + save.missions.map((m) => missionHtml(m, false)).join('');
     show('over');
@@ -246,8 +263,8 @@
     const url = /^https?:/.test(window.location.protocol) ? window.location.origin + window.location.pathname : '';
     const text =
       mode === 'daily'
-        ? 'ORBIT SWITCH 今日のチャレンジ（' + runDay + '）で ' + score + '点！ 同じステージで勝負しよう #ORBITSWITCH'
-        : 'ORBIT SWITCH で ' + score + '点！（ベスト ' + save.best + '）タップだけの中毒ゲーム #ORBITSWITCH';
+        ? T('share.daily', { day: runDay, score })
+        : T('share.normal', { score, best: save.best });
     const toast = (msg) => {
       const t = $('share-toast');
       t.textContent = msg;
@@ -259,8 +276,8 @@
       navigator.share({ title: 'ORBIT SWITCH', text, url: url || undefined }).catch(() => {});
     } else if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url ? text + ' ' + url : text).then(
-        () => toast('コピーしました！'),
-        () => toast('コピーできませんでした')
+        () => toast(T('share.copied')),
+        () => toast(T('share.failed'))
       );
     } else {
       toast(text);
@@ -317,7 +334,8 @@
   function showDaily(bonus) {
     if (bonus <= 0) return;
     const d = $('daily');
-    d.textContent = 'デイリーボーナス 🪙+' + bonus + '（' + save.streak + '日連続）';
+    showDaily.last = bonus;
+    d.textContent = T('menu.dailyBonus', { bonus, streak: save.streak });
     d.classList.remove('hidden');
   }
   document.addEventListener('visibilitychange', () => {
@@ -369,6 +387,14 @@
       show('menu');
     })
   );
+  // Switches the explicit language choice; the default ('auto') follows the device language.
+  $('btn-lang').addEventListener('click', () => {
+    save.lang = lang === 'ja' ? 'en' : 'ja';
+    Meta.persist(storage, save);
+    setLanguage();
+    if (showDaily.last) showDaily(showDaily.last);
+    renderMenu();
+  });
   $('btn-mute').addEventListener('click', () => {
     save.muted = !save.muted;
     Sfx.setMuted(save.muted);
@@ -605,8 +631,9 @@
     } else if (game.passedSpikes === 0) {
       ctx.font = '700 15px system-ui, sans-serif';
       ctx.fillStyle = 'rgba(238,242,255,0.8)';
-      ctx.fillText('タップで', sx, sy - 10);
-      ctx.fillText('内⇄外', sx, sy + 10);
+      const [l1, l2] = T('hint.start').split('\n');
+      ctx.fillText(l1, sx, sy - 10);
+      ctx.fillText(l2 || '', sx, sy + 10);
     }
     ctx.restore();
   }
@@ -652,7 +679,7 @@
       if (m.cumulative || missionsAnnounced.indexOf(m) !== -1) continue;
       if ((game[m.kind] || 0) >= m.goal) {
         missionsAnnounced.push(m);
-        popText(0, 0.1, '✅ ' + m.text, '#ffc94d', 18);
+        popText(0, 0.1, '✅ ' + missionText(m), '#ffc94d', 18);
         Sfx.coin();
       }
     }
@@ -686,7 +713,7 @@
       hudCache.score = game.score;
     }
     const m = Core.multiplier(game) * (game.fever > 0 ? 2 : 1);
-    const multText = m > 1 ? '×' + m + (game.fever > 0 ? ' FEVER' : '') : game.combo >= 2 ? game.combo + ' combo' : '';
+    const multText = m > 1 ? '×' + m + (game.fever > 0 ? ' FEVER' : '') : game.combo >= 2 ? T('hud.combo', { n: game.combo }) : '';
     if (multText !== hudCache.mult) {
       $('hud-mult').textContent = multText;
       hudCache.mult = multText;

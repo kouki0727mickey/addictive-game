@@ -32,16 +32,21 @@ function serve() {
   const browser = await chromium.launch();
   const errors = [];
   for (const vp of [
-    { name: 'phone', width: 390, height: 844, isMobile: true, hasTouch: true },
-    { name: 'desktop', width: 1280, height: 800 },
+    { name: 'phone', width: 390, height: 844, isMobile: true, hasTouch: true, locale: 'ja-JP' },
+    { name: 'desktop', width: 1280, height: 800, locale: 'en-US' },
   ]) {
-    const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch, reducedMotion: 'reduce' });
+    const page = await browser.newPage({ viewport: { width: vp.width, height: vp.height }, isMobile: vp.isMobile, hasTouch: vp.hasTouch, locale: vp.locale, reducedMotion: 'reduce' });
+    const hasJapanese = async () => /[\u3040-\u30ff\u4e00-\u9fff]/.test(await page.evaluate(() => document.body.innerText));
     page.on('pageerror', (e) => errors.push(vp.name + ': ' + e.message));
     page.on('console', (m) => m.type() === 'error' && errors.push(vp.name + ' console: ' + m.text()));
     page.on('response', (r) => r.status() >= 400 && errors.push(vp.name + ': HTTP ' + r.status() + ' ' + r.url()));
     await page.goto(url);
     await page.waitForTimeout(400);
     await page.screenshot({ path: path.join(outDir, vp.name + '-menu.png') });
+    // The UI follows the browser language: Japanese for ja-JP, English for everyone else.
+    const playText = await page.textContent('#btn-play');
+    if (vp.locale === 'ja-JP' ? playText !== 'タップでスタート' : playText !== 'TAP TO PLAY') errors.push(vp.name + ': wrong language on menu: ' + playText);
+    if (vp.locale === 'en-US' && (await hasJapanese())) errors.push(vp.name + ': Japanese text visible in English UI');
 
     await page.click('#btn-play');
     await page.waitForTimeout(300);
@@ -56,6 +61,7 @@ function serve() {
     await page.waitForSelector('#over:not(.hidden)', { timeout: 20000 });
     await page.waitForTimeout(300);
     await page.screenshot({ path: path.join(outDir, vp.name + '-over.png') });
+    if (vp.locale === 'en-US' && (await hasJapanese())) errors.push(vp.name + ': Japanese text on English results screen');
 
     await page.click('#btn-home');
     await page.click('#btn-shop');
@@ -84,12 +90,21 @@ function serve() {
     if (!(await page.$eval('#btn-shop', (b) => b.classList.contains('badge')))) errors.push(vp.name + ': shop badge missing with 100 coins');
     await page.click('#btn-shop');
     await page.click('.skin[data-id="lime"]'); // too expensive
-    if (!/足りません/.test(await page.textContent('#shop-msg'))) errors.push(vp.name + ': no feedback for unaffordable skin');
+    if (!/足りません|Not enough/.test(await page.textContent('#shop-msg'))) errors.push(vp.name + ': no feedback for unaffordable skin');
     await page.click('.skin[data-id="sakura"]');
     const after = await page.evaluate(() => JSON.parse(localStorage.getItem('orbit-switch-save-v1')));
     if (after.skin !== 'sakura' || after.coins !== 20) errors.push(vp.name + ': purchase failed ' + JSON.stringify({ skin: after.skin, coins: after.coins }));
     await page.screenshot({ path: path.join(outDir, vp.name + '-shop-bought.png') });
     await page.click('#shop .btn-back');
+
+    // language toggle: switches immediately and is remembered across reloads
+    const langBefore = await page.textContent('#btn-play');
+    await page.click('#btn-lang');
+    const langAfter = await page.textContent('#btn-play');
+    if (langAfter === langBefore) errors.push(vp.name + ': language toggle did nothing');
+    await page.screenshot({ path: path.join(outDir, vp.name + '-menu-toggled.png') });
+    await page.reload();
+    if ((await page.textContent('#btn-play')) !== langAfter) errors.push(vp.name + ': language choice not remembered');
 
     // reload: progress must persist
     const plays = await page.evaluate(() => JSON.parse(localStorage.getItem('orbit-switch-save-v1')).plays);

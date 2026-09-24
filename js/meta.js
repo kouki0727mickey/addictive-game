@@ -10,23 +10,24 @@
 
   const KEY = 'orbit-switch-save-v1';
 
+  // Display names and mission texts live in js/i18n.js ('skin.<id>', 'mission.<kind>'), so saves stay language-neutral.
   const SKINS = [
-    { id: 'neon', name: 'ネオン', price: 0, color: '#4df3ff', trail: '#4df3ff' },
-    { id: 'sakura', name: 'サクラ', price: 80, color: '#ff7ad9', trail: '#ffb3ec' },
-    { id: 'lime', name: 'ライム', price: 200, color: '#b6ff4d', trail: '#e2ff9e' },
-    { id: 'sun', name: 'サン', price: 400, color: '#ffc94d', trail: '#ff7b3a' },
-    { id: 'void', name: 'ヴォイド', price: 700, color: '#b28cff', trail: '#6a3dff' },
-    { id: 'ghost', name: 'ゴースト', price: 1100, color: '#eef2ff', trail: '#8a90b8' },
-    { id: 'rainbow', name: 'レインボー', price: 1600, color: 'rainbow', trail: 'rainbow' },
+    { id: 'neon', price: 0, color: '#4df3ff', trail: '#4df3ff' },
+    { id: 'sakura', price: 80, color: '#ff7ad9', trail: '#ffb3ec' },
+    { id: 'lime', price: 200, color: '#b6ff4d', trail: '#e2ff9e' },
+    { id: 'sun', price: 400, color: '#ffc94d', trail: '#ff7b3a' },
+    { id: 'void', price: 700, color: '#b28cff', trail: '#6a3dff' },
+    { id: 'ghost', price: 1100, color: '#eef2ff', trail: '#8a90b8' },
+    { id: 'rainbow', price: 1600, color: 'rainbow', trail: 'rainbow' },
   ];
 
   const MISSION_POOL = [
-    { kind: 'score', goals: [20, 40, 70, 100, 150], text: 'ワンプレイで{n}点' },
-    { kind: 'gems', goals: [5, 10, 20, 35], text: 'ワンプレイでジェム{n}個' },
-    { kind: 'nearMisses', goals: [2, 4, 8], text: 'ワンプレイでニアミス{n}回' },
-    { kind: 'bestCombo', goals: [5, 10, 20], text: 'コンボ{n}達成' },
-    { kind: 'feverCount', goals: [1, 2, 3], text: 'ワンプレイでフィーバー{n}回' },
-    { kind: 'plays', goals: [3, 5, 10], text: '{n}回プレイ', cumulative: true },
+    { kind: 'score', goals: [20, 40, 70, 100, 150] },
+    { kind: 'gems', goals: [5, 10, 20, 35] },
+    { kind: 'nearMisses', goals: [2, 4, 8] },
+    { kind: 'bestCombo', goals: [5, 10, 20] },
+    { kind: 'feverCount', goals: [1, 2, 3] },
+    { kind: 'plays', goals: [3, 5, 10], cumulative: true },
   ];
 
   function today(now) {
@@ -56,6 +57,7 @@
       lastDay: null,
       streak: 0,
       muted: false,
+      lang: 'auto', // 'auto' follows the device language; 'ja' / 'en' are explicit choices
       daily: null, // { day, best, tries } for today's challenge stage
     };
   }
@@ -65,7 +67,7 @@
     const m = pool[Math.floor(rng() * pool.length)];
     const tier = Math.min(m.goals.length - 1, Math.floor(save.missionTier / 2));
     const goal = m.goals[tier];
-    return { kind: m.kind, goal, progress: 0, reward: 10 + tier * 10, text: m.text.replace('{n}', goal), cumulative: !!m.cumulative };
+    return { kind: m.kind, goal, progress: 0, reward: 10 + tier * 10, cumulative: !!m.cumulative };
   }
 
   function fillMissions(save, rng) {
@@ -84,6 +86,7 @@
     if (!raw || typeof raw !== 'object') return d;
     for (const k of ['best', 'coins', 'xp', 'plays', 'totalGems', 'missionTier', 'streak']) d[k] = Math.floor(num(raw[k], d[k]));
     d.muted = raw.muted === true;
+    d.lang = raw.lang === 'ja' || raw.lang === 'en' ? raw.lang : 'auto';
     d.lastDay = typeof raw.lastDay === 'string' ? raw.lastDay : null;
     if (raw.daily && typeof raw.daily.day === 'string') {
       d.daily = { day: raw.daily.day, best: Math.floor(num(raw.daily.best, 0)), tries: Math.floor(num(raw.daily.tries, 0)) };
@@ -99,7 +102,7 @@
         .slice(0, 3)
         .map((m) => {
           const def = MISSION_POOL.find((p) => p.kind === m.kind);
-          return { kind: m.kind, goal: m.goal, progress: num(m.progress, 0), reward: num(m.reward, 15), text: def.text.replace('{n}', m.goal), cumulative: !!def.cumulative };
+          return { kind: m.kind, goal: m.goal, progress: num(m.progress, 0), reward: num(m.reward, 15), cumulative: !!def.cumulative };
         });
     }
     return d;

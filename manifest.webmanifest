@@ -1,7 +1,7 @@
 {
   "name": "ORBIT SWITCH",
   "short_name": "ORBIT",
-  "description": "タップだけで遊べる中毒性ワンタップゲーム",
+  "description": "A one-tap game you can’t put down: switch rings, dodge spikes, grab gems.",
   "start_url": "./",
   "display": "standalone",
   "orientation": "any",

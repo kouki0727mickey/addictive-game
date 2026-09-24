@@ -63,6 +63,7 @@ final class GameModel: ObservableObject {
 
     init() {
         save = Meta.load()
+        L10n.lang = L10n.resolve(save.lang)
         applySettings()
         dailyBonus = Meta.checkDaily(&save)
         Meta.persist(save)
@@ -78,6 +79,13 @@ final class GameModel: ObservableObject {
     func toggleSound() {
         save.soundOn.toggle()
         applySettings()
+        Meta.persist(save)
+    }
+
+    /// Switches between Japanese and English (an explicit choice that overrides the device language).
+    func toggleLanguage() {
+        save.lang = L10n.lang == "ja" ? "en" : "ja"
+        L10n.lang = save.lang
         Meta.persist(save)
     }
 
@@ -212,7 +220,7 @@ final class GameModel: ObservableObject {
         var h = HUDState()
         h.score = game.score
         let m = game.effectiveMultiplier
-        h.multText = m > 1 ? "×\(m)" + (game.fever > 0 ? " FEVER" : "") : (game.combo >= 2 ? "\(game.combo) combo" : "")
+        h.multText = m > 1 ? "×\(m)" + (game.fever > 0 ? " FEVER" : "") : (game.combo >= 2 ? L10n.t("hud.combo", ["n": game.combo]) : "")
         h.feverOn = game.fever > 0
         let pct = h.feverOn ? game.fever / GameConfig.feverDuration : Double(game.combo % GameConfig.feverEvery) / Double(GameConfig.feverEvery)
         h.feverPct = (pct * 50).rounded() / 50
@@ -241,7 +249,7 @@ final class GameModel: ObservableObject {
             prevBest = rec.prevBest
             best = rec.best
             newBest = rec.newBest
-            bestSuffix = "（\(save.daily?.tries ?? 1)回目）"
+            bestSuffix = L10n.t("over.try", ["n": save.daily?.tries ?? 1])
         }
         Meta.persist(save)
 
@@ -251,23 +259,25 @@ final class GameModel: ObservableObject {
         o.newBest = newBest
         o.bestText = "\(best)" + bestSuffix
         let gap = best - run.score
-        if newBest { o.tease = "記録更新！ +\(run.score - prevBest)" }
-        else if best == 0 { o.tease = "トゲをよけると1点！ タップで内⇄外を切替" }
-        else if prevBest == 0 && run.score > 0 { o.tease = "初記録！ 次はこれを超えよう" }
-        else if gap == 0 { o.tease = "ベストに並んだ！ あと1点で更新！" }
-        else if gap <= 5 { o.tease = "おしい！ あと\(gap + 1)点でベスト更新！" }
-        else { o.tease = "ベストまで あと\(gap + 1)点" }
-        o.details = [("ジェム", "\(run.gems)"), ("最大コンボ", "\(run.bestCombo)"), ("ニアミス", "\(run.nearMisses)")]
-        if game.smashed > 0 { o.details.append(("粉砕", "\(game.smashed)")) }
-        if sum.levelUps > 0 { o.details.append(("レベルアップ!", "Lv\(Meta.level(xp: save.xp))")) }
+        if newBest { o.tease = L10n.t("over.tease.newBest", ["n": run.score - prevBest]) }
+        else if best == 0 { o.tease = L10n.t("over.tease.zero") }
+        else if prevBest == 0 && run.score > 0 { o.tease = L10n.t("over.tease.first") }
+        else if gap == 0 { o.tease = L10n.t("over.tease.tied") }
+        else if gap <= 5 { o.tease = L10n.t("over.tease.close", ["n": gap + 1]) }
+        else { o.tease = L10n.t("over.tease.far", ["n": gap + 1]) }
+        o.details = [(L10n.t("over.gems"), "\(run.gems)"), (L10n.t("over.bestCombo"), "\(run.bestCombo)"), (L10n.t("over.nearMisses"), "\(run.nearMisses)")]
+        if game.smashed > 0 { o.details.append((L10n.t("over.smashed"), "\(game.smashed)")) }
+        if sum.levelUps > 0 { o.details.append((L10n.t("over.levelUp"), "Lv\(Meta.level(xp: save.xp))")) }
         o.coins = sum.coins
         if let next = Skins.all.filter({ !save.owned.contains($0.id) }).min(by: { $0.price < $1.price }) {
-            o.unlockText = save.coins >= next.price ? "🔓 スキン「\(next.name)」を解放できます！" : "次のスキン「\(next.name)」まで 🪙\(next.price - save.coins)"
+            o.unlockText = save.coins >= next.price
+                ? L10n.t("over.canUnlock", ["name": next.name])
+                : L10n.t("over.nextUnlock", ["name": next.name, "n": next.price - save.coins])
         }
         o.completed = sum.completed
         o.shareText = mode == .daily
-            ? "ORBIT SWITCH 今日のチャレンジ（\(runDay)）で \(run.score)点！ 同じステージで勝負しよう #ORBITSWITCH"
-            : "ORBIT SWITCH で \(run.score)点！（ベスト \(save.best)）タップだけの中毒ゲーム #ORBITSWITCH"
+            ? L10n.t("share.daily", ["day": runDay, "score": run.score])
+            : L10n.t("share.normal", ["score": run.score, "best": save.best])
         over = o
         screen = .over
         retryLockUntil = Date().addingTimeInterval(0.6) // a panic-tap at death must not skip the results
@@ -291,7 +301,7 @@ final class GameModel: ObservableObject {
             Meta.persist(save)
         } else {
             haptics.denied()
-            shopMessage = "コインが足りません（あと 🪙\(skin.price - save.coins)）— プレイして集めよう！"
+            shopMessage = L10n.t("shop.notEnough", ["n": skin.price - save.coins])
         }
     }
 

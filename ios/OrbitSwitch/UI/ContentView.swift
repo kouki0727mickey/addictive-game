@@ -150,8 +150,8 @@ struct PauseView: View {
         ZStack {
             Dim()
             VStack(spacing: 16) {
-                Text("一時停止").font(.system(size: 28, weight: .heavy, design: .rounded))
-                Button("タップで再開") { model.resume() }.buttonStyle(PrimaryButtonStyle())
+                Text(L10n.t("pause.title")).font(.system(size: 28, weight: .heavy, design: .rounded))
+                Button(L10n.t("pause.resume")) { model.resume() }.buttonStyle(PrimaryButtonStyle())
             }
         }
         .contentShape(Rectangle())
@@ -174,7 +174,7 @@ struct MenuView: View {
                     Text("SWITCH").font(.system(size: 60, weight: .black, design: .rounded)).foregroundStyle(Color.accent)
                 }
                 .shadow(color: Color.accent.opacity(0.7), radius: 18)
-                Text("タップで内側⇄外側。\nトゲをよけてジェムを集めろ。")
+                Text(L10n.t("menu.taglineApp"))
                     .multilineTextAlignment(.center)
                     .foregroundStyle(Color.muted)
                 HStack(spacing: 18) {
@@ -185,7 +185,7 @@ struct MenuView: View {
                 .font(.system(size: 18, design: .rounded))
                 ProgressBar(value: Double(lp.into) / Double(lp.need), colors: [.accent, Color(hex: 0xB28CFF)]).frame(width: 240)
                 if model.dailyBonus > 0 {
-                    Text("デイリーボーナス 🪙+\(model.dailyBonus)（\(model.save.streak)日連続）")
+                    Text(L10n.t("menu.dailyBonus", ["bonus": model.dailyBonus, "streak": model.save.streak]))
                         .font(.system(size: 15, weight: .bold))
                         .foregroundStyle(Color.gold)
                         .padding(.vertical, 8).padding(.horizontal, 14)
@@ -193,31 +193,34 @@ struct MenuView: View {
                         .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.gold, lineWidth: 1))
                         .clipShape(RoundedRectangle(cornerRadius: 12))
                 }
-                Button("タップでスタート") { model.startGame(.normal) }.buttonStyle(PrimaryButtonStyle())
+                Button(L10n.t("menu.play")) { model.startGame(.normal) }.buttonStyle(PrimaryButtonStyle())
                 Button {
                     model.startGame(.daily)
                 } label: {
                     HStack {
-                        Text("📅 今日のチャレンジ")
-                        Text(dailyBest > 0 ? "BEST \(dailyBest)" : "NEW").font(.caption.bold()).foregroundStyle(Color.gold)
+                        Text(L10n.t("menu.daily"))
+                        Text(dailyBest > 0 ? "BEST \(dailyBest)" : L10n.t("menu.new")).font(.caption.bold()).foregroundStyle(Color.gold)
                     }
                 }
                 .buttonStyle(PanelButtonStyle(border: Color.gold.opacity(0.5)))
                 HStack(spacing: 10) {
-                    Button("スキン") { model.show(.shop) }
+                    Button(L10n.t("menu.skins")) { model.show(.shop) }
                         .buttonStyle(PanelButtonStyle())
                         .overlay(alignment: .topTrailing) {
                             if model.canBuySomething {
                                 Circle().fill(Color.danger).frame(width: 12, height: 12).offset(x: 4, y: -4)
                             }
                         }
-                    Button("ミッション") { model.show(.missions) }.buttonStyle(PanelButtonStyle())
+                    Button(L10n.t("menu.missions")) { model.show(.missions) }.buttonStyle(PanelButtonStyle())
                     Button(model.save.soundOn ? "🔊" : "🔇") { model.toggleSound() }
                         .buttonStyle(PanelButtonStyle())
-                        .accessibilityLabel("サウンド切替")
+                        .accessibilityLabel(L10n.t("menu.sound"))
                     Button(model.save.hapticsOn ? "📳" : "📴") { model.toggleHaptics() }
                         .buttonStyle(PanelButtonStyle())
-                        .accessibilityLabel("振動切替")
+                        .accessibilityLabel(L10n.t("menu.haptics"))
+                    Button(L10n.lang == "ja" ? "EN" : "JA") { model.toggleLanguage() }
+                        .buttonStyle(PanelButtonStyle())
+                        .accessibilityLabel(L10n.t("menu.lang"))
                 }
             }
             .padding(16)
@@ -237,7 +240,7 @@ struct OverView: View {
             Dim().onTapGesture { model.retryIfAllowed() }
             ScrollView {
                 VStack(spacing: 12) {
-                    if o.isDaily { Text("📅 今日のチャレンジ").bold().foregroundStyle(Color.gold) }
+                    if o.isDaily { Text(L10n.t("over.daily")).bold().foregroundStyle(Color.gold) }
                     if o.newBest {
                         Text("NEW BEST!").font(.system(size: 28, weight: .black, design: .rounded)).foregroundStyle(Color.gold)
                     }
@@ -259,11 +262,11 @@ struct OverView: View {
                     }
                     .frame(maxWidth: 380)
                     HStack(spacing: 10) {
-                        Button("メニュー") { model.show(.menu) }.buttonStyle(PanelButtonStyle())
+                        Button(L10n.t("over.menu")) { model.show(.menu) }.buttonStyle(PanelButtonStyle())
                         ShareLink(item: o.shareText) { Text("📤") }
                             .buttonStyle(PanelButtonStyle())
-                            .accessibilityLabel("スコアを共有")
-                        Button("もう一回 ↻") { model.retryIfAllowed() }.buttonStyle(PrimaryButtonStyle())
+                            .accessibilityLabel(L10n.t("over.share"))
+                        Button(L10n.t("over.retry")) { model.retryIfAllowed() }.buttonStyle(PrimaryButtonStyle())
                     }
                 }
                 .padding(.horizontal, 16)
@@ -295,7 +298,7 @@ struct ShopView: View {
         ZStack {
             Dim()
             VStack(spacing: 14) {
-                Text("スキン").font(.system(size: 28, weight: .heavy, design: .rounded))
+                Text(L10n.t("shop.title")).font(.system(size: 28, weight: .heavy, design: .rounded))
                 Text("🪙 **\(model.save.coins)**").font(.system(size: 20))
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 10), count: 3), spacing: 10) {
                     ForEach(Skins.all) { skin in
@@ -304,7 +307,7 @@ struct ShopView: View {
                 }
                 .frame(maxWidth: 380)
                 Text(model.shopMessage).font(.footnote).foregroundStyle(Color.muted).multilineTextAlignment(.center)
-                Button("もどる") { model.show(.menu) }.buttonStyle(PanelButtonStyle())
+                Button(L10n.t("back")) { model.show(.menu) }.buttonStyle(PanelButtonStyle())
             }
             .padding(16)
         }
@@ -331,7 +334,7 @@ struct SkinCell: View {
                 }
                 .frame(width: 28, height: 28)
                 Text(skin.name).font(.system(size: 13, weight: .semibold))
-                Text(owned ? (selected ? "使用中" : "所持") : (affordable ? "購入 " : "") + "🪙\(skin.price)")
+                Text(owned ? L10n.t(selected ? "shop.equipped" : "shop.owned") : (affordable ? L10n.t("shop.buy") + " " : "") + "🪙\(skin.price)")
                     .font(.system(size: 11, weight: affordable ? .bold : .regular))
                     .foregroundStyle(affordable ? Color.gold : Color.muted)
             }
@@ -355,15 +358,15 @@ struct MissionsView: View {
         ZStack {
             Dim()
             VStack(spacing: 14) {
-                Text("ミッション").font(.system(size: 28, weight: .heavy, design: .rounded))
+                Text(L10n.t("missions.title")).font(.system(size: 28, weight: .heavy, design: .rounded))
                 VStack(spacing: 8) {
                     ForEach(model.save.missions) { MissionRow(mission: $0) }
                 }
                 .frame(maxWidth: 380)
-                Text("通算 \(model.save.plays) プレイ ・ ジェム \(model.save.totalGems) 個 ・ Lv \(Meta.level(xp: model.save.xp))")
+                Text(L10n.t("missions.lifetime", ["plays": model.save.plays, "gems": model.save.totalGems, "level": Meta.level(xp: model.save.xp)]))
                     .font(.footnote)
                     .foregroundStyle(Color.muted)
-                Button("もどる") { model.show(.menu) }.buttonStyle(PanelButtonStyle())
+                Button(L10n.t("back")) { model.show(.menu) }.buttonStyle(PanelButtonStyle())
             }
             .padding(16)
         }

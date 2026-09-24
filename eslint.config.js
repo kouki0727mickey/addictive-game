@@ -1,6 +1,6 @@
 module.exports = [
   {
-    files: ['js/**/*.js', 'tests/**/*.js', 'sw.js'],
+    files: ['js/**/*.js', 'tests/**/*.js', 'tools/**/*.js', 'sw.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'script',

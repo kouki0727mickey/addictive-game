@@ -387,7 +387,7 @@ final class GameScene: SKScene {
                 if cur < 0.9 && other > cur + 0.15 {
                     showHint("TAP!", size: 26 + CGFloat(sin(tNow * 18)) * 3)
                 } else if game.passedSpikes == 0 {
-                    showHint("タップで\n内⇄外", size: 15)
+                    showHint(L10n.t("hint.start"), size: 15)
                 }
             }
         }

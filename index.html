@@ -1,18 +1,18 @@
 <!doctype html>
-<html lang="ja">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#07071a" />
     <title>ORBIT SWITCH</title>
-    <meta name="description" content="タップだけで遊べる中毒性ワンタップゲーム。内側と外側のリングを切り替えてトゲをよけ、ジェムを集めてフィーバーを狙え。" />
+    <meta name="description" content="A one-tap game you can’t put down. Switch rings, dodge spikes, grab gems. タップだけで遊べる中毒性ワンタップゲーム。" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="stylesheet" href="css/style.css" />
   </head>
   <body>
-    <canvas id="game" aria-label="ゲーム画面：タップまたはスペースキーでリングを切り替え"></canvas>
+    <canvas id="game" data-i18n-aria="canvas.label"></canvas>
 
     <div id="hud" class="hidden">
       <div id="hud-best"></div>
@@ -22,14 +22,14 @@
     </div>
 
     <section id="pause" class="screen hidden">
-      <h2>一時停止</h2>
-      <button id="btn-resume" class="btn primary">タップで再開</button>
-      <p class="tagline">Esc / P でも一時停止・再開できます</p>
+      <h2 data-i18n="pause.title"></h2>
+      <button id="btn-resume" class="btn primary" data-i18n="pause.resume"></button>
+      <p class="tagline" data-i18n="pause.hint"></p>
     </section>
 
     <section id="menu" class="screen">
       <h1 class="logo">ORBIT<span>SWITCH</span></h1>
-      <p class="tagline">タップで内側⇄外側。<wbr />トゲをよけて<wbr />ジェムを集めろ。</p>
+      <p class="tagline" data-i18n-html="menu.tagline"></p>
       <div class="stats">
         <div>BEST <b id="menu-best">0</b></div>
         <div>🪙 <b id="menu-coins">0</b></div>
@@ -37,18 +37,19 @@
       </div>
       <div class="xpbar"><i id="menu-xp"></i></div>
       <div id="daily" class="toast hidden"></div>
-      <button id="btn-play" class="btn primary">タップでスタート</button>
-      <button id="btn-daily" class="btn daily">📅 今日のチャレンジ <small id="daily-best"></small></button>
+      <button id="btn-play" class="btn primary" data-i18n="menu.play"></button>
+      <button id="btn-daily" class="btn daily"><span data-i18n="menu.daily"></span> <small id="daily-best"></small></button>
       <div class="row">
-        <button id="btn-shop" class="btn">スキン</button>
-        <button id="btn-missions" class="btn">ミッション</button>
-        <button id="btn-mute" class="btn icon" aria-label="サウンド切替">🔊</button>
+        <button id="btn-shop" class="btn" data-i18n="menu.skins"></button>
+        <button id="btn-missions" class="btn" data-i18n="menu.missions"></button>
+        <button id="btn-mute" class="btn icon" data-i18n-aria="menu.sound">🔊</button>
+        <button id="btn-lang" class="btn icon" data-i18n-aria="menu.lang"></button>
       </div>
     </section>
 
     <section id="over" class="screen hidden">
       <div id="share-toast" class="toast hidden" role="status"></div>
-      <div id="over-mode" class="mode-label hidden">📅 今日のチャレンジ</div>
+      <div id="over-mode" class="mode-label hidden" data-i18n="over.daily"></div>
       <div id="over-newbest" class="newbest hidden">NEW BEST!</div>
       <div class="over-score" id="over-score" aria-live="polite">0</div>
       <div class="over-best">BEST <b id="over-best">0</b></div>
@@ -57,27 +58,28 @@
       <div id="over-unlock" class="unlock"></div>
       <div id="over-missions" class="missions"></div>
       <div class="row">
-        <button id="btn-home" class="btn">メニュー</button>
-        <button id="btn-share" class="btn icon" aria-label="スコアを共有">📤</button>
-        <button id="btn-retry" class="btn primary">もう一回 ↻</button>
+        <button id="btn-home" class="btn" data-i18n="over.menu"></button>
+        <button id="btn-share" class="btn icon" data-i18n-aria="over.share">📤</button>
+        <button id="btn-retry" class="btn primary" data-i18n="over.retry"></button>
       </div>
     </section>
 
     <section id="shop" class="screen hidden">
-      <h2>スキン</h2>
+      <h2 data-i18n="shop.title"></h2>
       <div class="coins">🪙 <b id="shop-coins">0</b></div>
       <div id="shop-list" class="shop-list"></div>
       <p id="shop-msg" class="tagline" role="status"></p>
-      <button class="btn btn-back">もどる</button>
+      <button class="btn btn-back" data-i18n="back"></button>
     </section>
 
     <section id="missions" class="screen hidden">
-      <h2>ミッション</h2>
+      <h2 data-i18n="missions.title"></h2>
       <div id="mission-list" class="missions"></div>
       <p id="lifetime" class="tagline"></p>
-      <button class="btn btn-back">もどる</button>
+      <button class="btn btn-back" data-i18n="back"></button>
     </section>
 
+    <script src="js/i18n.js"></script>
     <script src="js/core.js"></script>
     <script src="js/meta.js"></script>
     <script src="js/audio.js"></script>

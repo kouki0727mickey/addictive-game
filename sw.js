@@ -1,8 +1,8 @@
 /* ORBIT SWITCH service worker: play offline after the first visit.
  * Stale-while-revalidate: serve from cache instantly, refresh the cache in the background,
  * so a new deploy is picked up on the next launch without ever blocking on the network. */
-const CACHE = 'orbit-switch-v1';
-const SHELL = ['./', 'index.html', 'css/style.css', 'js/core.js', 'js/meta.js', 'js/audio.js', 'js/main.js', 'icon.svg', 'manifest.webmanifest'];
+const CACHE = 'orbit-switch-v2';
+const SHELL = ['./', 'index.html', 'css/style.css', 'js/i18n.js', 'js/core.js', 'js/meta.js', 'js/audio.js', 'js/main.js', 'icon.svg', 'manifest.webmanifest'];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)).then(() => self.skipWaiting()));

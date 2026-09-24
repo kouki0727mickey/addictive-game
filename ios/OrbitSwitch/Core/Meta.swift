@@ -5,22 +5,23 @@ import Foundation
 
 struct Skin: Identifiable, Equatable {
     let id: String
-    let name: String
     let price: Int
     /// 0xRRGGBB, or nil for the animated rainbow skin
     let color: UInt32?
     let trail: UInt32?
+
+    var name: String { L10n.t("skin.\(id)") }
 }
 
 enum Skins {
     static let all: [Skin] = [
-        Skin(id: "neon", name: "ネオン", price: 0, color: 0x4DF3FF, trail: 0x4DF3FF),
-        Skin(id: "sakura", name: "サクラ", price: 80, color: 0xFF7AD9, trail: 0xFFB3EC),
-        Skin(id: "lime", name: "ライム", price: 200, color: 0xB6FF4D, trail: 0xE2FF9E),
-        Skin(id: "sun", name: "サン", price: 400, color: 0xFFC94D, trail: 0xFF7B3A),
-        Skin(id: "void", name: "ヴォイド", price: 700, color: 0xB28CFF, trail: 0x6A3DFF),
-        Skin(id: "ghost", name: "ゴースト", price: 1100, color: 0xEEF2FF, trail: 0x8A90B8),
-        Skin(id: "rainbow", name: "レインボー", price: 1600, color: nil, trail: nil),
+        Skin(id: "neon", price: 0, color: 0x4DF3FF, trail: 0x4DF3FF),
+        Skin(id: "sakura", price: 80, color: 0xFF7AD9, trail: 0xFFB3EC),
+        Skin(id: "lime", price: 200, color: 0xB6FF4D, trail: 0xE2FF9E),
+        Skin(id: "sun", price: 400, color: 0xFFC94D, trail: 0xFF7B3A),
+        Skin(id: "void", price: 700, color: 0xB28CFF, trail: 0x6A3DFF),
+        Skin(id: "ghost", price: 1100, color: 0xEEF2FF, trail: 0x8A90B8),
+        Skin(id: "rainbow", price: 1600, color: nil, trail: nil),
     ]
 
     static func find(_ id: String) -> Skin { all.first { $0.id == id } ?? all[0] }
@@ -42,16 +43,7 @@ enum MissionKind: String, Codable, CaseIterable {
 
     var cumulative: Bool { self == .plays }
 
-    func text(_ n: Int) -> String {
-        switch self {
-        case .score: return "ワンプレイで\(n)点"
-        case .gems: return "ワンプレイでジェム\(n)個"
-        case .nearMisses: return "ワンプレイでニアミス\(n)回"
-        case .bestCombo: return "コンボ\(n)達成"
-        case .feverCount: return "ワンプレイでフィーバー\(n)回"
-        case .plays: return "\(n)回プレイ"
-        }
-    }
+    func text(_ n: Int) -> String { L10n.t("mission.\(rawValue)", ["n": n]) }
 }
 
 struct Mission: Codable, Equatable, Identifiable {
@@ -112,6 +104,7 @@ struct SaveData: Codable, Equatable {
     var streak = 0
     var soundOn = true
     var hapticsOn = true
+    var lang = "auto" // "auto" follows the device language; "ja" / "en" are explicit choices
     var daily: DailyRecord?
 
     init() {}
@@ -136,6 +129,8 @@ struct SaveData: Codable, Equatable {
         soundOn = (try? c.decodeIfPresent(Bool.self, forKey: .soundOn)) ?? true
         hapticsOn = (try? c.decodeIfPresent(Bool.self, forKey: .hapticsOn)) ?? true
         daily = try? c.decodeIfPresent(DailyRecord.self, forKey: .daily)
+        let langRaw = (try? c.decodeIfPresent(String.self, forKey: .lang)) ?? "auto"
+        lang = ["ja", "en"].contains(langRaw) ? langRaw : "auto"
         let ownedRaw = (try? c.decodeIfPresent([String].self, forKey: .owned)) ?? []
         owned = ownedRaw.filter { id in Skins.all.contains { $0.id == id } }
         if !owned.contains("neon") { owned.insert("neon", at: 0) }

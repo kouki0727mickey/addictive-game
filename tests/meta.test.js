@@ -91,7 +91,7 @@ test('sanitize repairs hostile / broken saves', () => {
   assert.deepStrictEqual(s.owned, ['neon']);
   assert.strictEqual(s.skin, 'neon');
   assert.strictEqual(s.missions.length, 1);
-  assert.ok(!s.missions[0].text.includes('<'));
+  assert.ok(!('text' in s.missions[0])); // texts come from i18n, never from the save
   assert.deepStrictEqual(Meta.sanitize(null), Meta.defaultSave());
   assert.deepStrictEqual(Meta.sanitize(42), Meta.defaultSave());
 });
@@ -140,4 +140,11 @@ test('daily challenge: same seed per day, separate best, resets next day', () =>
   Meta.recordDaily(s, '2026-9-25', 10);
   assert.deepStrictEqual(s.daily, { day: '2026-9-25', best: 10, tries: 1 });
   assert.deepStrictEqual(Meta.sanitize({ daily: { day: 5 } }).daily, null);
+});
+
+test('language setting is sanitized', () => {
+  assert.strictEqual(Meta.sanitize({ lang: 'en' }).lang, 'en');
+  assert.strictEqual(Meta.sanitize({ lang: 'ja' }).lang, 'ja');
+  assert.strictEqual(Meta.sanitize({ lang: '<script>' }).lang, 'auto');
+  assert.strictEqual(Meta.defaultSave().lang, 'auto');
 });
