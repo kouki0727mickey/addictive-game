@@ -28,7 +28,7 @@ knowledge/
 │   └── ai-native-entertainment.md  AIネイティブなエンタメの設計原則
 ├── ai-characters/             ★重点領域: AIキャラクター・会話NPC
 │   ├── patterns.md            設計パターン集（38パターン）
-│   ├── case-studies.md        事例分析（11件）
+│   ├── case-studies.md        事例分析（14件）
 │   └── evaluation.md          評価フレームワークとリリース判定
 ├── domains/                   領域別
 │   ├── games.md
