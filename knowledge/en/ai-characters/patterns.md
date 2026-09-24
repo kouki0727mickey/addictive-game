@@ -134,6 +134,7 @@ last_reviewed: 2026-09-24
   - e.g. "Is this line convincing given the NPC's goal (P03)? Score 0–3 and quote the supporting words."
 - **Evidence**: Repeating the same question until the NPC gave in and completed the quest (C07, the "Solid Snake method").
 - **Verification (2026-09-24, [experiment log](../../../experiments/2026-09-24-npc-robustness.md))**: Even with a fully fooled judge, combining P16 and P11 blocked breakthrough by repetition. **Attacks that stack differently-worded lines can only be stopped by the judge's accuracy**, which must be measured on real models.
+- **Verification on real models (2026-09-24, [round 2](../../../experiments/2026-09-24-npc-robustness.md))**: With Claude Opus 5 (1 trial) and Claude Haiku 4.5 (3 trials), the judge held against varied pleas (A9), authority claims without evidence (A10) and instructions aimed at the judge (A11). But **it gave 2–3 points to hollow lists of reasons** ("I have identification, a purpose, witnesses…", A12), and with Haiku the gate opened in 2 of 3 trials. The same judge sometimes scored a genuine argument (L3) at 1 and failed it. 💡 Scoring one line at a time cannot tell true claims from empty ones: back claims with game facts (P19), or award points only once per claim type.
 
 ### P18 Persuasion Meter
 - **Problem**: In free conversation players can't tell whether their words are working.
@@ -222,6 +223,7 @@ Theory: [engagement-design](../../foundations/engagement-design.md) (Japanese).
 - **Problem**: Running every exchange on a large model costs more per player than the player earns.
 - **Solution**: Handle routine lines and short acknowledgements with a small model or pre-generated text; reserve the large model for key story moments.
 - **Caveat**: Smaller models tend to be easier to fool. Protect the cheap paths most with P16 and P17 (C07).
+- **Verification (2026-09-24, [experiment log](../../../experiments/2026-09-24-npc-robustness.md))**: With the same design, mean latency per call was 4.70 s for Claude Opus 5 (effort low) and 1.73 s for Claude Haiku 4.5. The guarded engine was breached only by A12 on Haiku (2/3); Opus 5 (1 trial) had none. The naive engine paid out on fake narration (A1, A2) even with Opus 5, so **a bigger model is no substitute for P16**. 💡 A large model for the judge and a small one for acting looks promising (not yet measured).
 
 ### P35 On-Device SLM
 - **Problem**: Server inference costs money and adds latency.
