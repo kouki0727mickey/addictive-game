@@ -232,7 +232,13 @@
         }
       }
     }
-    s.objects = s.objects.filter((o) => !o.dead && o.angle - s.angle > -CONFIG.despawnBehind);
+    // Compact in place: this runs up to 120 times a second, so avoid allocating a new array.
+    let w = 0;
+    for (let i = 0; i < s.objects.length; i++) {
+      const o = s.objects[i];
+      if (!o.dead && o.angle - s.angle > -CONFIG.despawnBehind) s.objects[w++] = o;
+    }
+    s.objects.length = w;
   }
 
   function step(s, dt) {
@@ -243,6 +249,23 @@
       subStep(s, h);
       left -= h;
     }
+  }
+
+  // Simple autopilot: switch when a spike on our ring is close and the other ring is clearer.
+  // Used by the menu's attract-mode demo, the ?autoplay test hook and the fairness tests.
+  function autopilot(s, extraLead) {
+    if (!s.alive || s.ringPos !== s.ring) return false;
+    const horizon = s.speed * (CONFIG.switchTime + 0.12 + (extraLead || 0));
+    let threatCur = Infinity;
+    let threatOther = Infinity;
+    for (const o of s.objects) {
+      if (o.type !== 'spike' || o.dead) continue;
+      const rel = o.angle - s.angle;
+      if (rel < -0.12) continue;
+      if (o.ring === s.ring) threatCur = Math.min(threatCur, rel);
+      else threatOther = Math.min(threatOther, rel);
+    }
+    return threatCur < horizon && threatOther > threatCur + 0.1;
   }
 
   function drainEvents(s) {
@@ -259,6 +282,7 @@
     step,
     switchRing,
     drainEvents,
+    autopilot,
     playerPos,
     objectPos,
     ringRadius,

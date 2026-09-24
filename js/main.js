@@ -45,6 +45,8 @@
   let hitStop = 0; // seconds of frozen time (impact feel)
   let slowMo = 0; // seconds of slow motion remaining
   let hue = 0;
+  // Test hook: ?autoplay lets the built-in autopilot play real runs (used by the E2E test).
+  const AUTOPLAY = /[?&]autoplay\b/.test(window.location.search);
   let retryLockUntil = 0; // prevents a panic-tap at death from skipping the results
 
   function resize() {
@@ -330,12 +332,18 @@
     return [CX + x * unit, CY + y * unit];
   }
 
+  const bgCache = { key: '', grad: null };
   function drawBackground(t) {
     const fever = game.fever > 0;
-    const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, Math.max(W, H) * 0.7);
-    g.addColorStop(0, fever ? '#2a0b3a' : '#10123a');
-    g.addColorStop(1, '#07071a');
-    ctx.fillStyle = g;
+    const key = (fever ? 'f' : 'n') + W + 'x' + H;
+    if (bgCache.key !== key) {
+      const g = ctx.createRadialGradient(CX, CY, 0, CX, CY, Math.max(W, H) * 0.7);
+      g.addColorStop(0, fever ? '#2a0b3a' : '#10123a');
+      g.addColorStop(1, '#07071a');
+      bgCache.key = key;
+      bgCache.grad = g;
+    }
+    ctx.fillStyle = bgCache.grad;
     ctx.fillRect(0, 0, W, H);
 
     // pulsing rings
@@ -357,54 +365,98 @@
     ctx.fill();
   }
 
-  function drawSpike(x, y, angle, ring) {
-    const [sx, sy] = toScreen(x, y);
-    const r = C.spikeRadius * unit;
-    ctx.save();
-    ctx.translate(sx, sy);
-    ctx.rotate(angle + (ring === 0 ? Math.PI : 0));
-    ctx.beginPath();
-    for (let i = 0; i < 8; i++) {
-      const a = (i / 8) * Math.PI * 2;
-      const rr = i % 2 ? r * 0.55 : r * 1.25;
-      ctx.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+  // shadowBlur is very slow on mobile canvases, so glowing shapes are pre-rendered once per size/colour.
+  const spriteCache = new Map();
+  function sprite(key, radius, paint) {
+    const k = key + '@' + Math.round(radius * DPR * 10);
+    let c = spriteCache.get(k);
+    if (!c) {
+      if (spriteCache.size > 24) spriteCache.clear(); // window resizes create new sizes; don't grow forever
+      const pad = 16;
+      const size = Math.ceil((radius * 2.6 + pad * 2) * DPR);
+      c = document.createElement('canvas');
+      c.width = c.height = size;
+      const g = c.getContext('2d');
+      g.scale(DPR, DPR);
+      g.translate(size / DPR / 2, size / DPR / 2);
+      paint(g, radius);
+      c.half = size / DPR / 2;
+      spriteCache.set(k, c);
     }
-    ctx.closePath();
-    ctx.fillStyle = game.fever > 0 ? '#ff9ec0' : '#ff4d6d';
-    ctx.shadowColor = '#ff4d6d';
-    ctx.shadowBlur = 12;
-    ctx.fill();
-    ctx.restore();
+    return c;
+  }
+
+  function paintSpike(color) {
+    return (g, r) => {
+      g.beginPath();
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        const rr = i % 2 ? r * 0.55 : r * 1.25;
+        g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr);
+      }
+      g.closePath();
+      g.fillStyle = color;
+      g.shadowColor = '#ff4d6d';
+      g.shadowBlur = 12;
+      g.fill();
+    };
+  }
+
+  function paintGem(g, r) {
+    g.rotate(Math.PI / 4);
+    g.fillStyle = '#ffc94d';
+    g.shadowColor = '#ffc94d';
+    g.shadowBlur = 14;
+    g.fillRect(-r * 0.7, -r * 0.7, r * 1.4, r * 1.4);
+  }
+
+  function drawSprite(img, x, y, rotation, scale) {
+    const [sx, sy] = toScreen(x, y);
+    const h = img.half * (scale || 1);
+    if (rotation) {
+      ctx.save();
+      ctx.translate(sx, sy);
+      ctx.rotate(rotation);
+      ctx.drawImage(img, -h, -h, h * 2, h * 2);
+      ctx.restore();
+    } else {
+      ctx.drawImage(img, sx - h, sy - h, h * 2, h * 2);
+    }
+  }
+
+  function drawSpike(x, y, angle) {
+    const fever = game.fever > 0;
+    const img = sprite(fever ? 'spikeF' : 'spike', C.spikeRadius * unit, paintSpike(fever ? '#ff9ec0' : '#ff4d6d'));
+    drawSprite(img, x, y, angle, 1);
   }
 
   function drawGem(x, y, t) {
-    const [sx, sy] = toScreen(x, y);
-    const r = C.gemRadius * unit * (1 + Math.sin(t * 8) * 0.12);
-    ctx.save();
-    ctx.translate(sx, sy);
-    ctx.rotate(Math.PI / 4);
-    ctx.fillStyle = '#ffc94d';
-    ctx.shadowColor = '#ffc94d';
-    ctx.shadowBlur = 14;
-    ctx.fillRect(-r * 0.7, -r * 0.7, r * 1.4, r * 1.4);
-    ctx.restore();
+    drawSprite(sprite('gem', C.gemRadius * unit, paintGem), x, y, 0, 1 + Math.sin(t * 8) * 0.12);
   }
 
   function drawPlayer() {
     const p = Core.playerPos(game);
-    trail.push({ x: p.x, y: p.y });
-    if (trail.length > 14) trail.shift();
+    // Trail length is measured in game time, so it looks the same at 60Hz and 120Hz.
+    const TRAIL_T = 0.2;
+    if (!trail.length || trail[trail.length - 1].t !== game.t) trail.push({ x: p.x, y: p.y, t: game.t });
+    while (trail.length && game.t - trail[0].t > TRAIL_T) trail.shift();
+    const base = ctx.globalAlpha;
     ctx.save();
-    for (let i = 0; i < trail.length; i++) {
-      const tp = trail[i];
-      const [sx, sy] = toScreen(tp.x, tp.y);
-      ctx.globalAlpha = (i / trail.length) * 0.5;
+    // Tapered ribbon: consecutive segments get thicker and more opaque towards the player.
+    ctx.strokeStyle = skinColor('trail');
+    ctx.lineCap = 'round';
+    for (let i = 1; i < trail.length; i++) {
+      const k = 1 - (game.t - trail[i].t) / TRAIL_T;
+      const [ax, ay] = toScreen(trail[i - 1].x, trail[i - 1].y);
+      const [bx, by] = toScreen(trail[i].x, trail[i].y);
+      ctx.globalAlpha = base * k * 0.6;
+      ctx.lineWidth = C.playerRadius * unit * 2 * k;
       ctx.beginPath();
-      ctx.arc(sx, sy, C.playerRadius * unit * (i / trail.length), 0, Math.PI * 2);
-      ctx.fillStyle = skinColor('trail');
-      ctx.fill();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.stroke();
     }
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha = base;
     const [sx, sy] = toScreen(p.x, p.y);
     ctx.beginPath();
     ctx.arc(sx, sy, C.playerRadius * unit, 0, Math.PI * 2);
@@ -515,7 +567,21 @@
     last = now;
     hue += dt * 120;
 
+    const demoMode = state === 'menu' || state === 'shop' || state === 'missions';
+    if (demoMode) {
+      // Attract mode: the autopilot plays quietly behind the menus.
+      if (!game.demo || !game.alive) {
+        game = Core.createGame((Math.random() * 1e9) >>> 0);
+        game.demo = true;
+        trail = [];
+      }
+      if (Core.autopilot(game)) Core.switchRing(game);
+      Core.step(game, dt);
+      Core.drainEvents(game);
+    }
+
     if (state === 'play') {
+      if (AUTOPLAY && Core.autopilot(game)) Core.switchRing(game);
       if (hitStop > 0) {
         hitStop -= dt;
       } else if (game.alive) {
@@ -540,13 +606,15 @@
       shake = Math.max(0, shake - dt * 40);
     }
     drawBackground(now / 1000);
-    if (state === 'play' || state === 'over' || state === 'pause') {
+    {
+      ctx.globalAlpha = demoMode ? 0.35 : 1;
       for (const o of game.objects) {
         const q = Core.objectPos(o);
-        if (o.type === 'spike') drawSpike(q.x, q.y, o.angle, o.ring);
+        if (o.type === 'spike') drawSpike(q.x, q.y, o.angle);
         else drawGem(q.x, q.y, now / 1000);
       }
       if (game.alive) drawPlayer();
+      ctx.globalAlpha = 1;
       if (state === 'play' && game.alive && save.plays < 3 && game.passedSpikes < 4) drawTutorial(now / 1000);
     }
     drawEffects(dt);

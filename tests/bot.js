@@ -1,22 +1,8 @@
 // Autopilots used to check that generated levels are survivable.
 const Core = require('../js/core.js');
 
-// Returns true if the player should switch rings now.
-function decide(s) {
-  const C = Core.CONFIG;
-  const cur = s.ring;
-  const horizon = s.speed * (C.switchTime + 0.12);
-  let threatCur = Infinity;
-  let threatOther = Infinity;
-  for (const o of s.objects) {
-    if (o.type !== 'spike' || o.dead) continue;
-    const rel = o.angle - s.angle;
-    if (rel < -0.12) continue;
-    if (o.ring === cur) threatCur = Math.min(threatCur, rel);
-    else threatOther = Math.min(threatOther, rel);
-  }
-  if (s.ringPos !== s.ring) return false; // mid-switch
-  return threatCur < horizon && threatOther > threatCur + 0.1;
+function decide(s, extraLead) {
+  return Core.autopilot(s, extraLead);
 }
 
 // Perfect-information bot: reacts instantly.
@@ -39,11 +25,7 @@ function playHuman(seed, maxTime, reaction, jitter) {
     s.ring = plannedRing;
     const saved = s.ringPos;
     s.ringPos = plannedRing;
-    const C = Core.CONFIG;
-    const sw = C.switchTime;
-    C.switchTime = sw + reaction;
-    const want = queue.length === 0 && decide(s);
-    C.switchTime = sw;
+    const want = queue.length === 0 && decide(s, reaction);
     s.ring = real;
     s.ringPos = saved;
     if (want) {
