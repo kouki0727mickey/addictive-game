@@ -1,0 +1,46 @@
+# XcodeGen spec: `xcodegen generate` creates OrbitSwitch.xcodeproj (not committed).
+name: OrbitSwitch
+options:
+  bundleIdPrefix: com.orbitswitch
+  deploymentTarget:
+    iOS: "16.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  OrbitSwitch:
+    type: application
+    platform: iOS
+    sources: [OrbitSwitch]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.orbitswitch.app
+        TARGETED_DEVICE_FAMILY: "1,2"
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: ORBIT SWITCH
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIStatusBarHidden: YES
+        INFOPLIST_KEY_UIRequiresFullScreen: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad: "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+  OrbitSwitchTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [OrbitSwitchTests]
+    dependencies:
+      - target: OrbitSwitch
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+schemes:
+  OrbitSwitch:
+    build:
+      targets:
+        OrbitSwitch: all
+        OrbitSwitchTests: [test]
+    test:
+      targets: [OrbitSwitchTests]

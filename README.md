@@ -67,6 +67,10 @@ npm run e2e        # Playwright でスマホ/PC/横向き/オートプレイ/オ
 
 を確認しています。
 
+## iOS アプリ版
+
+`ios/` に Swift + SpriteKit で作ったネイティブ版があります（iPhone の振動対応）。詳しくは [`ios/README.md`](ios/README.md)。
+
 ## レビューの記録
 
 開発中に行った 50 回以上のレビューと修正は [`REVIEW_LOG.md`](REVIEW_LOG.md) にまとめています。

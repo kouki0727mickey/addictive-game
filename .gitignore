@@ -1,2 +1,4 @@
 screenshots/
 node_modules/
+ios/*.xcodeproj/
+ios/build/
