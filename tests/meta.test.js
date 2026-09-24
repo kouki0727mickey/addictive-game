@@ -126,3 +126,18 @@ test('coins grow with score but with diminishing returns', () => {
   assert.ok(c(100) > c(10));
   assert.ok(c(1000) - c(900) < c(100) - c(0));
 });
+
+test('daily challenge: same seed per day, separate best, resets next day', () => {
+  assert.strictEqual(Meta.dailySeed('2026-9-24'), Meta.dailySeed('2026-9-24'));
+  assert.notStrictEqual(Meta.dailySeed('2026-9-24'), Meta.dailySeed('2026-9-25'));
+  const s = Meta.defaultSave();
+  let r = Meta.recordDaily(s, '2026-9-24', 30);
+  assert.deepStrictEqual(r, { prevBest: 0, best: 30, newBest: false });
+  r = Meta.recordDaily(s, '2026-9-24', 45);
+  assert.deepStrictEqual(r, { prevBest: 30, best: 45, newBest: true });
+  assert.strictEqual(s.daily.tries, 2);
+  assert.strictEqual(Meta.dailyBest(s, '2026-9-25'), 0);
+  Meta.recordDaily(s, '2026-9-25', 10);
+  assert.deepStrictEqual(s.daily, { day: '2026-9-25', best: 10, tries: 1 });
+  assert.deepStrictEqual(Meta.sanitize({ daily: { day: 5 } }).daily, null);
+});

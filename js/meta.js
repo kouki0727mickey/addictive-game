@@ -56,6 +56,7 @@
       lastDay: null,
       streak: 0,
       muted: false,
+      daily: null, // { day, best, tries } for today's challenge stage
     };
   }
 
@@ -84,6 +85,9 @@
     for (const k of ['best', 'coins', 'xp', 'plays', 'totalGems', 'missionTier', 'streak']) d[k] = Math.floor(num(raw[k], d[k]));
     d.muted = raw.muted === true;
     d.lastDay = typeof raw.lastDay === 'string' ? raw.lastDay : null;
+    if (raw.daily && typeof raw.daily.day === 'string') {
+      d.daily = { day: raw.daily.day, best: Math.floor(num(raw.daily.best, 0)), tries: Math.floor(num(raw.daily.tries, 0)) };
+    }
     if (Array.isArray(raw.owned)) {
       d.owned = raw.owned.filter((id) => SKINS.some((s) => s.id === id));
       if (d.owned.indexOf('neon') === -1) d.owned.unshift('neon');
@@ -192,6 +196,26 @@
     return summary;
   }
 
+  // Daily challenge: everyone gets the same stage on the same day (seed = hash of the date).
+  function dailySeed(day) {
+    let h = 2166136261;
+    for (let i = 0; i < day.length; i++) h = Math.imul(h ^ day.charCodeAt(i), 16777619);
+    return h >>> 0;
+  }
+
+  function dailyBest(save, day) {
+    return save.daily && save.daily.day === day ? save.daily.best : 0;
+  }
+
+  // Returns { prevBest, best, newBest } for today's challenge.
+  function recordDaily(save, day, score) {
+    if (!save.daily || save.daily.day !== day) save.daily = { day, best: 0, tries: 0 };
+    const prevBest = save.daily.best;
+    save.daily.tries++;
+    if (score > prevBest) save.daily.best = score;
+    return { prevBest, best: save.daily.best, newBest: prevBest > 0 && score > prevBest };
+  }
+
   function buySkin(save, id) {
     const skin = SKINS.find((s) => s.id === id);
     if (!skin) return false;
@@ -206,5 +230,5 @@
     return true;
   }
 
-  return { KEY, SKINS, runCoins, xpForLevel, MISSION_POOL, defaultSave, sanitize, load, persist, levelFromXp, levelProgress, checkDaily, applyRun, buySkin, today, dayDiff };
+  return { KEY, dailySeed, dailyBest, recordDaily, SKINS, runCoins, xpForLevel, MISSION_POOL, defaultSave, sanitize, load, persist, levelFromXp, levelProgress, checkDaily, applyRun, buySkin, today, dayDiff };
 });

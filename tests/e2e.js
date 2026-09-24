@@ -65,12 +65,20 @@ function serve() {
     await page.screenshot({ path: path.join(outDir, vp.name + '-missions.png') });
     await page.click('#missions .btn-back');
 
+    // daily challenge: separate mode label and best
+    await page.click('#btn-daily');
+    await page.waitForSelector('#over:not(.hidden)', { timeout: 20000 });
+    if (!(await page.isVisible('#over-mode'))) errors.push(vp.name + ': daily label missing on results');
+    await page.screenshot({ path: path.join(outDir, vp.name + '-daily-over.png') });
+    await page.click('#btn-home');
+    if (!/BEST|NEW/.test(await page.textContent('#daily-best'))) errors.push(vp.name + ': daily best not shown on menu');
+
     // reload: progress must persist
     const plays = await page.evaluate(() => JSON.parse(localStorage.getItem('orbit-switch-save-v1')).plays);
-    if (plays !== 1) errors.push(vp.name + ': expected plays=1 after one run, got ' + plays);
+    if (plays !== 2) errors.push(vp.name + ': expected plays=2 after two runs, got ' + plays);
     await page.reload();
     const plays2 = await page.evaluate(() => JSON.parse(localStorage.getItem('orbit-switch-save-v1')).plays);
-    if (plays2 !== 1) errors.push(vp.name + ': save lost on reload');
+    if (plays2 !== 2) errors.push(vp.name + ': save lost on reload');
     await page.close();
   }
 

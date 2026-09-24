@@ -420,3 +420,18 @@ h2 {
 #hud-best.beaten {
   color: var(--gold);
 }
+
+.btn.daily {
+  border-color: rgba(255, 201, 77, 0.5);
+}
+
+.btn.daily small {
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.mode-label {
+  color: var(--gold);
+  font-weight: 700;
+  letter-spacing: 1px;
+}

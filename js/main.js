@@ -89,6 +89,8 @@
     $('menu-level').textContent = lp.level;
     $('menu-xp').style.width = Math.round((lp.into / lp.need) * 100) + '%';
     $('btn-mute').textContent = save.muted ? '🔇' : '🔊';
+    const db = Meta.dailyBest(save, Meta.today(Date.now()));
+    $('daily-best').textContent = db > 0 ? 'BEST ' + db : 'NEW';
   }
 
   function esc(v) {
@@ -142,10 +144,17 @@
   });
 
   // ---------- game flow ----------
-  function startGame() {
+  let mode = 'normal'; // normal | daily
+  function currentBest() {
+    return mode === 'daily' ? Meta.dailyBest(save, Meta.today(Date.now())) : save.best;
+  }
+
+  function startGame(nextMode) {
+    if (nextMode === 'normal' || nextMode === 'daily') mode = nextMode;
     Sfx.unlock();
     if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
-    game = Core.createGame((Date.now() ^ (Math.random() * 1e9)) >>> 0);
+    const seed = mode === 'daily' ? Meta.dailySeed(Meta.today(Date.now())) : (Date.now() ^ (Math.random() * 1e9)) >>> 0;
+    game = Core.createGame(seed);
     particles = [];
     texts = [];
     trail = [];
@@ -171,16 +180,19 @@
       feverCount: game.feverCount,
     };
     const sum = Meta.applyRun(save, run);
+    // In daily mode, "best" means today's challenge best.
+    const rec = mode === 'daily' ? Meta.recordDaily(save, Meta.today(Date.now()), run.score) : { prevBest: sum.prevBest, best: save.best, newBest: sum.newBest };
     Meta.persist(storage, save);
 
+    $('over-mode').classList.toggle('hidden', mode !== 'daily');
     $('over-score').textContent = run.score;
-    $('over-best').textContent = save.best;
-    $('over-newbest').classList.toggle('hidden', !sum.newBest);
-    const gap = save.best - run.score;
+    $('over-best').textContent = rec.best + (mode === 'daily' ? '（' + save.daily.tries + '回目）' : '');
+    $('over-newbest').classList.toggle('hidden', !rec.newBest);
+    const gap = rec.best - run.score;
     let tease;
-    if (sum.newBest) tease = '記録更新！ +' + (run.score - sum.prevBest);
-    else if (save.best === 0) tease = 'トゲをよけると1点！ タップで内⇄外を切替';
-    else if (sum.prevBest === 0 && run.score > 0) tease = '初記録！ 次はこれを超えよう';
+    if (rec.newBest) tease = '記録更新！ +' + (run.score - rec.prevBest);
+    else if (rec.best === 0) tease = 'トゲをよけると1点！ タップで内⇄外を切替';
+    else if (rec.prevBest === 0 && run.score > 0) tease = '初記録！ 次はこれを超えよう';
     else if (gap === 0) tease = 'ベストに並んだ！ あと1点で更新！';
     else if (gap <= 5) tease = 'おしい！ あと' + (gap + 1) + '点でベスト更新！';
     else tease = 'ベストまで あと' + (gap + 1) + '点';
@@ -202,9 +214,9 @@
     show('over');
     retryLockUntil = performance.now() + 600;
     countUp($('over-coins'), sum.coins);
-    if (sum.newBest) Sfx.best();
+    if (rec.newBest) Sfx.best();
     else if (sum.completed.length || sum.levelUps) Sfx.coin();
-    if (sum.newBest || sum.completed.length) buzz([15, 30, 15]);
+    if (rec.newBest || sum.completed.length) buzz([15, 30, 15]);
   }
 
   // Rewards feel bigger when you watch them tick up.
@@ -223,7 +235,10 @@
   function shareScore() {
     const score = Number($('over-score').textContent) || 0;
     const url = /^https?:/.test(window.location.protocol) ? window.location.origin + window.location.pathname : '';
-    const text = 'ORBIT SWITCH で ' + score + '点！（ベスト ' + save.best + '）タップだけの中毒ゲーム #ORBITSWITCH';
+    const text =
+      mode === 'daily'
+        ? 'ORBIT SWITCH 今日のチャレンジ（' + Meta.today(Date.now()) + '）で ' + score + '点！ 同じステージで勝負しよう #ORBITSWITCH'
+        : 'ORBIT SWITCH で ' + score + '点！（ベスト ' + save.best + '）タップだけの中毒ゲーム #ORBITSWITCH';
     const toast = (msg) => {
       const t = $('share-toast');
       t.textContent = msg;
@@ -275,7 +290,8 @@
       e.preventDefault();
       if (e.repeat) return;
       if (state === 'play') onTap();
-      else if (state === 'menu' || (state === 'over' && performance.now() > retryLockUntil)) startGame();
+      else if (state === 'menu') startGame('normal');
+      else if (state === 'over' && performance.now() > retryLockUntil) startGame();
       else if (state === 'pause') resume();
     }
   });
@@ -311,7 +327,8 @@
     resume();
   });
 
-  $('btn-play').addEventListener('click', startGame);
+  $('btn-play').addEventListener('click', () => startGame('normal'));
+  $('btn-daily').addEventListener('click', () => startGame('daily'));
   $('btn-retry').addEventListener('click', () => {
     if (performance.now() > retryLockUntil) startGame();
   });
@@ -321,7 +338,7 @@
       if (e.target.closest('button, .missions, .toast')) return;
       if (id === 'over' && performance.now() < retryLockUntil) return;
       e.preventDefault();
-      startGame();
+      startGame(id === 'menu' ? 'normal' : undefined);
     })
   );
   $('btn-share').addEventListener('click', shareScore);
@@ -635,8 +652,9 @@
   function updateHud() {
     checkMissionsLive();
     // Chasing your best is the core hook: show it, and celebrate the moment you pass it.
-    const beaten = save.best > 0 && game.score > save.best;
-    const bestText = save.best === 0 ? '' : beaten ? 'NEW BEST!' : 'BEST ' + save.best;
+    const best = currentBest();
+    const beaten = best > 0 && game.score > best;
+    const bestText = best === 0 ? '' : beaten ? 'NEW BEST!' : (mode === 'daily' ? '📅 BEST ' : 'BEST ') + best;
     if (bestText !== hudCache.best) {
       const el = $('hud-best');
       el.textContent = bestText;
