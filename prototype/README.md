@@ -46,7 +46,7 @@ npc_lab/
 ├── world.py      ゲームの状態とキャラクター設定（P05 バイブル形式）
 ├── llm.py        Claude API バックエンドとモック
 ├── agents.py     素朴な実装とパターン適用版のエンジン
-├── scenarios.py  攻撃8種・正当なプレイ4種
+├── scenarios.py  攻撃12種（うち判定器狙い4種）・正当なプレイ4種
 └── run_eval.py   実行と結果の表の出力
 tests/
 └── test_guarantees.py  LLMが完全にだまされても守れること／守れないことのテスト
