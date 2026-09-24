@@ -46,16 +46,17 @@ class AnthropicBackend:
 
     def generate(self, system: str, messages: list[dict], schema: dict) -> dict:
         schema = {k: v for k, v in schema.items() if k != "title"}
+        output_config = {"format": {"type": "json_schema", "schema": schema}}
+        # Haiku 4.5 は effort に対応しておらず、送ると 400 になる
+        if "haiku" not in self.model:
+            output_config["effort"] = self.effort
         started = time.monotonic()
         response = self.client.messages.create(
             model=self.model,
             max_tokens=2048,
             system=system,
             messages=messages,
-            output_config={
-                "effort": self.effort,
-                "format": {"type": "json_schema", "schema": schema},
-            },
+            output_config=output_config,
             extra_headers={"anthropic-beta": "server-side-fallback-2026-07-01"},
             extra_body={"fallbacks": "default"},
         )

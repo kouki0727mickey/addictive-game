@@ -36,7 +36,7 @@ python3 -m npc_lab.run_eval --backend anthropic --trials 5 \
 ```
 
 - APIキーは `NPC_LAB_API_KEY` を優先して読む。Claude Code のクラウド環境では `ANTHROPIC_API_KEY` がセッションに渡らないため、こちらを使う
-- 既定のモデルは `claude-opus-5`、`effort` は `low`（会話NPCは待ち時間が重要なため）。`--model` と `--effort` で変えられる
+- 既定のモデルは `claude-opus-5`、`effort` は `low`（会話NPCは待ち時間が重要なため）。`--model` と `--effort` で変えられる（`claude-haiku-4-5` は effort 非対応なので送らない）
 - 安全分類器による拒否に備えて、サーバー側フォールバック（`fallbacks: "default"`）を有効にしている
 - 費用の目安（推定）: 1試行で約120回のAPI呼び出し。`claude-opus-5` で1試行あたり1.5ドル前後。`--trials 5` で7〜8ドル前後
 
@@ -48,7 +48,8 @@ npc_lab/
 ├── llm.py        Claude API バックエンドとモック
 ├── agents.py     素朴な実装とパターン適用版のエンジン
 ├── scenarios.py  攻撃12種（うち判定器狙い4種）・正当なプレイ4種
-└── run_eval.py   実行と結果の表の出力
+├── run_eval.py   実行と結果の表の出力
+└── probe_judge.py 判定器（P17）の採点を発言ごとに表示する調査用スクリプト
 tests/
 └── test_guarantees.py  LLMが完全にだまされても守れること／守れないことのテスト
 ```
