@@ -74,3 +74,27 @@ test('speed ramps with spikes passed, not with score', () => {
   Core.step(s, 1 / 60);
   assert.ok(Math.abs(s.speed - Core.CONFIG.maxSpeed) < 1e-9);
 });
+
+test('no live object is ever more than the spawn horizon ahead (no lap overlap)', () => {
+  const limit = Core.CONFIG.spawnAhead + 1e-6;
+  for (let seed = 1; seed <= 20; seed++) {
+    const s = Core.createGame(seed);
+    s.passedSpikes = Core.CONFIG.rampSpikes; // late-game patterns
+    for (let i = 0; i < 60 * 40 && s.alive; i++) {
+      if (Core.autopilot(s)) Core.switchRing(s);
+      Core.step(s, 1 / 60);
+      for (const o of s.objects) assert.ok(o.angle - s.angle < limit, 'seed ' + seed + ': object ' + (o.angle - s.angle).toFixed(2) + ' rad ahead');
+    }
+  }
+});
+
+test('fever end grants a short invulnerability window', () => {
+  const s = Core.createGame(3);
+  s.fever = 0.001;
+  Core.step(s, 1 / 60);
+  assert.ok(s.grace > 0);
+  // put a spike right on the player: must not kill during grace
+  s.objects.push({ id: 999, type: 'spike', ring: s.ring, angle: s.angle, passed: false, dead: false });
+  Core.step(s, 1 / 120);
+  assert.ok(s.alive);
+});

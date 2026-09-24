@@ -15,7 +15,9 @@
     playerRadius: 0.022,
     spikeRadius: 0.022,
     gemRadius: 0.018,
-    hitForgiveness: 0.75, // <1 makes hitboxes smaller than they look
+    hitForgiveness: 0.75, // spike hitbox scale: <1 makes spikes smaller than they look
+    gemMagnet: 1.6, // gem pickup radius scale: >1 makes gems easier to grab than they look
+    passBehind: 0.06, // radians behind the player at which an object counts as passed
     baseSpeed: 1.5, // rad/s
     maxSpeed: 3.4,
     rampSpikes: 150, // spikes passed until top speed
@@ -25,6 +27,7 @@
     nearMissWindow: 0.28, // seconds since last switch
     feverEvery: 10, // combo count that triggers fever
     feverDuration: 4,
+    feverGrace: 0.6, // seconds of invulnerability after fever ends
     maxMultiplier: 5,
     maxStep: 1 / 120,
   };
@@ -65,11 +68,13 @@
       nearMisses: 0,
       switches: 0,
       fever: 0,
+      grace: 0,
       feverCount: 0,
       smashed: 0,
       passedSpikes: 0,
       alive: true,
       objects: [],
+      pending: [],
       nextId: 1,
       nextSpawnAngle: -Math.PI / 2 + 1.6,
       lastSpikeRing: -1,
@@ -89,8 +94,14 @@
     return Math.min(CONFIG.maxMultiplier, 1 + Math.floor(s.combo / 5));
   }
 
+  // Patterns can extend far ahead. Objects wait in `pending` (sorted by angle) and only become live
+  // once inside the spawn horizon, so nothing can ever be placed a full lap ahead — where it would
+  // physically overlap the player's current position.
   function addObject(s, type, ring, angle) {
-    s.objects.push({ id: s.nextId++, type, ring, angle, passed: false, dead: false });
+    const o = { id: s.nextId++, type, ring, angle, passed: false, dead: false };
+    let i = s.pending.length;
+    while (i > 0 && s.pending[i - 1].angle > angle) i--;
+    s.pending.splice(i, 0, o);
   }
 
   // Place one "beat" of content at s.nextSpawnAngle and advance it.
@@ -116,6 +127,22 @@
       s.lastSpikeRing = ring;
       s.lastSpikeAngle = a;
       if (rng() < 0.45) addObject(s, 'gem', 1 - ring, a);
+    } else if (roll < 0.72 && d > 0.3) {
+      // zigzag: alternating spikes at the tightest fair spacing, a rhythm test for later stages
+      const n = 3 + Math.floor(rng() * 2);
+      const zigGap = minGap * speed;
+      let ring = s.lastSpikeRing === -1 ? 0 : s.lastSpikeRing;
+      let at = Math.max(a, s.lastSpikeAngle + zigGap);
+      for (let i = 0; i < n; i++) {
+        addObject(s, 'spike', ring, at);
+        if (rng() < 0.5) addObject(s, 'gem', 1 - ring, at);
+        s.lastSpikeRing = ring;
+        s.lastSpikeAngle = at;
+        ring = 1 - ring;
+        at += zigGap;
+      }
+      s.nextSpawnAngle = s.lastSpikeAngle + gapT * speed;
+      return;
     } else if (roll < 0.82) {
       // gem trail on one ring
       const ring = rng() < 0.5 ? 0 : 1;
@@ -173,12 +200,19 @@
     s.speed = lerp(CONFIG.baseSpeed, CONFIG.maxSpeed, difficulty(s));
     s.angle += s.speed * dt;
 
+    if (s.grace > 0) s.grace = Math.max(0, s.grace - dt);
     if (s.fever > 0) {
       s.fever = Math.max(0, s.fever - dt);
-      if (s.fever === 0) emit(s, 'feverEnd');
+      if (s.fever === 0) {
+        // Don't let fever end *inside* a spike: give a short invulnerable window.
+        s.grace = CONFIG.feverGrace;
+        emit(s, 'feverEnd');
+      }
     }
 
-    while (s.nextSpawnAngle < s.angle + CONFIG.spawnAhead) spawnBeat(s);
+    const horizon = s.angle + CONFIG.spawnAhead;
+    while (s.nextSpawnAngle < horizon) spawnBeat(s);
+    while (s.pending.length && s.pending[0].angle < horizon) s.objects.push(s.pending.shift());
 
     const p = playerPos(s);
     const mult = multiplier(s) * (s.fever > 0 ? 2 : 1);
@@ -187,35 +221,40 @@
       const q = objectPos(o);
       const dx = p.x - q.x;
       const dy = p.y - q.y;
-      const rr = (CONFIG.playerRadius + (o.type === 'gem' ? CONFIG.gemRadius * 1.6 : CONFIG.spikeRadius)) * (o.type === 'gem' ? 1 : CONFIG.hitForgiveness);
-      if (dx * dx + dy * dy < rr * rr) {
-        if (o.type === 'gem') {
-          o.dead = true;
-          s.gems++;
-          s.combo++;
-          s.bestCombo = Math.max(s.bestCombo, s.combo);
-          const points = 2 * mult;
-          s.score += points;
-          emit(s, 'gem', { x: q.x, y: q.y, combo: s.combo, points });
-          if (s.combo % CONFIG.feverEvery === 0) {
-            s.fever = CONFIG.feverDuration;
-            s.feverCount++;
-            emit(s, 'fever');
+      const isGem = o.type === 'gem';
+      // Right after fever, spikes are harmless (but still count as passed below).
+      const harmless = !isGem && s.grace > 0;
+      if (!harmless) {
+        const rr = isGem ? CONFIG.playerRadius + CONFIG.gemRadius * CONFIG.gemMagnet : (CONFIG.playerRadius + CONFIG.spikeRadius) * CONFIG.hitForgiveness;
+        if (dx * dx + dy * dy < rr * rr) {
+          if (o.type === 'gem') {
+            o.dead = true;
+            s.gems++;
+            s.combo++;
+            s.bestCombo = Math.max(s.bestCombo, s.combo);
+            const points = 2 * mult;
+            s.score += points;
+            emit(s, 'gem', { x: q.x, y: q.y, combo: s.combo, points });
+            if (s.combo % CONFIG.feverEvery === 0) {
+              s.fever = CONFIG.feverDuration;
+              s.feverCount++;
+              emit(s, 'fever');
+            }
+          } else if (s.fever > 0) {
+            o.dead = true;
+            s.smashed++;
+            s.score += 3 * mult;
+            emit(s, 'smash', { x: q.x, y: q.y });
+          } else {
+            s.alive = false;
+            emit(s, 'death', { x: p.x, y: p.y });
+            return;
           }
-        } else if (s.fever > 0) {
-          o.dead = true;
-          s.smashed++;
-          s.score += 3 * mult;
-          emit(s, 'smash', { x: q.x, y: q.y });
-        } else {
-          s.alive = false;
-          emit(s, 'death', { x: p.x, y: p.y });
-          return;
+          continue;
         }
-        continue;
       }
       const rel = o.angle - s.angle;
-      if (!o.passed && rel < -0.06) {
+      if (!o.passed && rel < -CONFIG.passBehind) {
         o.passed = true;
         if (o.type === 'spike') {
           s.passedSpikes++;

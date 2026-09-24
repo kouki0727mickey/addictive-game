@@ -293,7 +293,7 @@
           Sfx.switch();
           break;
         case 'gem':
-          Sfx.gem(e.combo);
+          Sfx.gem(e.combo, C.feverEvery);
           burst(e.x, e.y, '#ffc94d', 10, 0.35);
           popText(e.x, e.y, '+' + e.points, '#ffc94d');
           break;
