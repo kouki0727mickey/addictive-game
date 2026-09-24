@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import time
 from typing import Protocol
@@ -34,7 +35,10 @@ class AnthropicBackend:
     def __init__(self, model: str = "claude-opus-5", effort: str = "low"):
         import anthropic
 
-        self.client = anthropic.Anthropic()
+        # クラウド環境では ANTHROPIC_API_KEY がセッションに渡らないことがあるため、
+        # 専用の変数 NPC_LAB_API_KEY を優先する。なければ SDK の既定の探索に任せる
+        key = os.environ.get("NPC_LAB_API_KEY")
+        self.client = anthropic.Anthropic(api_key=key) if key else anthropic.Anthropic()
         self.model = model
         self.effort = effort
         self.name = f"anthropic:{model}"

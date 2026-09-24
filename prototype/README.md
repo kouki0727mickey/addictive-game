@@ -29,12 +29,13 @@ python3 -m npc_lab.run_eval --backend mock
 # 構造上の保証のテスト（判定器まで完全にだまされた最悪の場合）
 python3 -m unittest discover -s tests -t .
 
-# 実モデルでの実験（要 ANTHROPIC_API_KEY または `ant auth login`）
+# 実モデルでの実験（要 NPC_LAB_API_KEY、ANTHROPIC_API_KEY、または `ant auth login`）
 pip install -r requirements.txt
 python3 -m npc_lab.run_eval --backend anthropic --trials 5 \
     --out ../experiments/$(date +%F)-npc-robustness-opus5.md
 ```
 
+- APIキーは `NPC_LAB_API_KEY` を優先して読む。Claude Code のクラウド環境では `ANTHROPIC_API_KEY` がセッションに渡らないため、こちらを使う
 - 既定のモデルは `claude-opus-5`、`effort` は `low`（会話NPCは待ち時間が重要なため）。`--model` と `--effort` で変えられる
 - 安全分類器による拒否に備えて、サーバー側フォールバック（`fallbacks: "default"`）を有効にしている
 - 費用の目安（推定）: 1試行で約120回のAPI呼び出し。`claude-opus-5` で1試行あたり1.5ドル前後。`--trials 5` で7〜8ドル前後
