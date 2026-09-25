@@ -1,7 +1,7 @@
 # ORBIT SWITCH に AI 機能を足す 企画書
 
 > 前提: 既存のワンタップ・アクション（1プレイ数十秒）への機能追加。対象は全年齢（年齢区分は未設定）。プラットフォームは Web（PWA）と iOS。地域は日本語圏と英語圏。規模は個人開発＋AIコーディングアシスタント、予算はほぼゼロ（課金・広告なし）
-> 対象コード: ブランチ `claude/addictive-game-development-w7myen` のコミット `8002a6d`（読み取りのみ）
+> 対象コード: [kouki0727mickey/orbit-switch](https://github.com/kouki0727mickey/orbit-switch) のコミット `8002a6d`（読み取りのみ。企画時はこのリポジトリのブランチにあった）
 > 根拠にしたナレッジ: `engagement-design.md`（判定表・レッドライン・指標）、`ai-native-entertainment.md`（原則1・2・4・6・7）、`games.md`（DDA、ストアの開示、落とし穴）、`business-models.md`（コスト構造）、`ai-characters/patterns.md`（P15, P16, P22, P23, P24, P30, P33, P34, P37）、`ai-disclosure-guide.md`（Step 1）、[公開前チェック](release-check-2026-09-25.md)
 > 作成日: 2026-09-25。スキル `/game-concept` で作成
 

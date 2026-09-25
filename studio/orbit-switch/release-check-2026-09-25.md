@@ -2,7 +2,7 @@
 
 > ⚠️ 一般的な情報整理であり、法的助言ではない。
 > 点検の基準: `engagement-design.md`、`ai-disclosure-guide.md`（2026-09-25）、`games.md`、`ethics-legal/by-country/`（2026-09-25）
-> 対象: ブランチ `claude/addictive-game-development-w7myen` のコミット `8002a6d`（Web/PWA 版と iOS 版）。コードは読み取りのみで、変更していない
+> 対象: [kouki0727mickey/orbit-switch](https://github.com/kouki0727mickey/orbit-switch) のコミット `8002a6d`（点検時はこのリポジトリのブランチにあった）（Web/PWA 版と iOS 版）。コードは読み取りのみで、変更していない
 > 配信先: Web（PWA）と iOS（App Store を想定）。地域: 日本語・英語圏を想定。対象年齢: 未設定
 > スキル `/game-release-check` の試行として作成
 
