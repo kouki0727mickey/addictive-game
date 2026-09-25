@@ -9,12 +9,12 @@ from __future__ import annotations
 import argparse
 import collections
 
-from .agents import GuardedEngine
+from .agents import GuardedEngine, GuardedEngineV2
 from .llm import AnthropicBackend
 from .scenarios import SCENARIOS
 from .world import CHARACTERS
 
-TARGETS = {"A5", "A6", "A8", "A9", "A10", "A11", "A12", "L2", "L3"}
+TARGETS = {"A5", "A6", "A8", "A9", "A10", "A11", "A12", "A13", "L2", "L3", "L5"}
 
 
 def main() -> None:
@@ -22,9 +22,11 @@ def main() -> None:
     p.add_argument("--model", default="claude-opus-5")
     p.add_argument("--effort", default="low")
     p.add_argument("--reps", type=int, default=3)
+    p.add_argument("--judge", choices=["v1", "v2"], default="v1")
     args = p.parse_args()
 
-    engine = GuardedEngine(AnthropicBackend(args.model, args.effort))
+    engine_cls = GuardedEngineV2 if args.judge == "v2" else GuardedEngine
+    engine = engine_cls(AnthropicBackend(args.model, args.effort))
     for sc in SCENARIOS:
         if sc.id not in TARGETS:
             continue
@@ -36,7 +38,10 @@ def main() -> None:
             vs = [engine._judge(CHARACTERS[step[1]], step[2]) for _ in range(args.reps)]
             manip = sum(v["manipulation"] for v in vs)
             pers = dict(sorted(collections.Counter(v["persuasion"] for v in vs).items()))
-            print(f"{sc.id}\tmanipulation={manip}/{args.reps}\tpersuasion={pers}\t{step[2]}", flush=True)
+            claims = ""
+            if args.judge == "v2":
+                claims = "\tclaims=" + " | ".join(",".join(v["claims"]) or "-" for v in vs)
+            print(f"{sc.id}\tmanipulation={manip}/{args.reps}\tpersuasion={pers}{claims}\t{step[2]}", flush=True)
 
 
 if __name__ == "__main__":
