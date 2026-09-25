@@ -8,7 +8,7 @@ tags: [music, singing-voice, adaptive-audio, rights]
 
 # 音楽 × AI
 
-> 事例分析は [case-studies.md](case-studies.md)（映像 F01〜F05・音楽 M01〜M04・アニメ/マンガ A01〜A05）を参照。
+> 事例分析は [case-studies.md](case-studies.md)（映像 F01〜F10・音楽 M01〜M10・アニメ/マンガ A01〜A10）を参照。
 
 ## 一言で言うと
 音楽は **「テキストから完成曲まで生成できる」段階に最も早く到達した** エンタメ領域の一つ。

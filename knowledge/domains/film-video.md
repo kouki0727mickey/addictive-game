@@ -8,7 +8,7 @@ tags: [film, video-generation, vfx, dubbing]
 
 # 映像 × AI
 
-> 事例分析は [case-studies.md](case-studies.md)（映像 F01〜F05・音楽 M01〜M04・アニメ/マンガ A01〜A05）を参照。
+> 事例分析は [case-studies.md](case-studies.md)（映像 F01〜F10・音楽 M01〜M10・アニメ/マンガ A01〜A10）を参照。
 
 ## 一言で言うと
 動画生成AIの登場で、**プリプロダクション（企画・絵コンテ・プリビズ）** と **ポストプロダクション（VFX・編集・吹替）**

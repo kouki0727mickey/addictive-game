@@ -8,7 +8,7 @@ tags: [anime, manga, japan, production, translation]
 
 # アニメ・マンガ × AI
 
-> 事例分析は [case-studies.md](case-studies.md)（映像 F01〜F05・音楽 M01〜M04・アニメ/マンガ A01〜A05）を参照。
+> 事例分析は [case-studies.md](case-studies.md)（映像 F01〜F10・音楽 M01〜M10・アニメ/マンガ A01〜A10）を参照。
 
 ## 一言で言うと
 日本の最強IP領域。現場の人手不足は深刻で、AIへの期待は大きい一方、

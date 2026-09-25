@@ -40,7 +40,7 @@ knowledge/
 │   ├── anime-manga.md
 │   ├── characters-vtuber-live.md
 │   ├── interactive-story.md
-│   └── case-studies.md        映像・音楽・アニメ/マンガの事例分析（14件）
+│   └── case-studies.md        映像・音楽・アニメ/マンガの事例分析（30件）
 ├── business/
 │   └── business-models.md     収益モデル・コスト構造・参入戦略
 ├── ethics-legal/

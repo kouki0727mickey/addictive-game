@@ -54,7 +54,10 @@ sagaftra.org、nysenate.gov、congress.gov、governor.ny.gov、indiewire.com、c
 |---|---|---|---|
 | domains/case-studies.md | 映像・音楽・アニメ/マンガの事例14件 | B | 各事例に付けた報道・公式発表（検索結果の本文要約で照合）。F04 のディズニー発表、A05 のCODA要望書、M04 のDeezer発表は当事者の公式ページ |
 | ethics-legal/by-country/china.md | 表示弁法（2025年9月1日施行） | B | Loeb & Loeb、China Law Translate の解説 |
-| ethics-legal/by-country/china.md | 生成AIサービス暫定弁法の学習データ要件 | C | 記憶に基づく。`【要確認】` を付けた |
+| ethics-legal/by-country/china.md | 生成AIサービス暫定弁法の学習データ要件 | B | China Law Translate の英訳・China Briefing の解説で第7条を確認。**解消** |
+| ethics-legal/by-country/china.md | 民法典1023条（声）と北京インターネット法院の判決（2024年4月） | B | King & Wood Mallesons、Linklaters の解説。**解消** |
+| ethics-legal/by-country/korea.md | 学習と著作権（TDM例外は未成立） | B | Asia IP、IT Brief Asia の報道。**解消** |
+| domains/case-studies.md | 追加16件（F06〜F10、M05〜M10、A06〜A10） | B | 各事例に付けた報道・公式ページ（検索結果の要約で照合） |
 | ethics-legal/by-country/korea.md | AI基本法（2026年1月22日施行、表示義務、過料猶予） | B | 米国商務省、Cooley、FPF の解説 |
 
 ## 追跡中の案件（結果が出たら更新）
