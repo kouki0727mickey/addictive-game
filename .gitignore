@@ -1,2 +1,4 @@
 __pycache__/
 *.pyc
+_site_src/
+_site/

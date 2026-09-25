@@ -1,0 +1,94 @@
+site_name: AI × エンタメ ナレッジベース
+site_description: AI × Entertainment knowledge base — games, film, music, anime, AI characters, regulation
+site_url: https://kouki0727mickey.github.io/addictive-game/
+repo_url: https://github.com/kouki0727mickey/addictive-game
+edit_uri: ""
+docs_dir: _site_src
+site_dir: _site
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: {icon: material/brightness-7, name: ダークモード}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: {icon: material/brightness-4, name: ライトモード}
+plugins:
+  - search:
+      lang: [ja, en]
+  - tags
+markdown_extensions:
+  - tables
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+nav:
+  - ホーム:
+      - index.md
+      - 全体マップ: knowledge/00_landscape.md
+      - 世界一への戦略: STRATEGY.md
+      - 用語集: knowledge/glossary.md
+      - 事実確認ログ: knowledge/_verification-log.md
+  - 基礎:
+      - エンタメで使うAI技術: knowledge/foundations/tech-stack.md
+      - 「ハマる」の科学とAI: knowledge/foundations/engagement-design.md
+      - AIネイティブなエンタメ: knowledge/foundations/ai-native-entertainment.md
+      - "実践ガイド: AI利用の開示": knowledge/foundations/ai-disclosure-guide.md
+  - AIキャラクター:
+      - knowledge/ai-characters/README.md
+      - 設計パターン集: knowledge/ai-characters/patterns.md
+      - 事例分析: knowledge/ai-characters/case-studies.md
+      - 評価フレームワーク: knowledge/ai-characters/evaluation.md
+      - "実践ガイド: 説得NPC": knowledge/ai-characters/playbook-persuasion-npc.md
+  - 領域別:
+      - ゲーム: knowledge/domains/games.md
+      - 映像: knowledge/domains/film-video.md
+      - 音楽: knowledge/domains/music.md
+      - アニメ・マンガ: knowledge/domains/anime-manga.md
+      - キャラクター・VTuber・ライブ: knowledge/domains/characters-vtuber-live.md
+      - インタラクティブ物語: knowledge/domains/interactive-story.md
+      - 事例分析（30件）: knowledge/domains/case-studies.md
+      - ビジネスモデル: knowledge/business/business-models.md
+  - 法務・倫理:
+      - 論点別の整理: knowledge/ethics-legal/ethics-legal.md
+      - 国別比較: knowledge/ethics-legal/by-country/README.md
+      - 日本: knowledge/ethics-legal/by-country/japan.md
+      - 米国: knowledge/ethics-legal/by-country/us.md
+      - EU: knowledge/ethics-legal/by-country/eu.md
+      - 中国: knowledge/ethics-legal/by-country/china.md
+      - 韓国: knowledge/ethics-legal/by-country/korea.md
+  - 実験:
+      - 実験環境: prototype/README.md
+      - 会話NPCの堅牢性（本体）: experiments/2026-09-24-npc-robustness.md
+      - 第2回 Opus 5: experiments/2026-09-24-npc-robustness-opus5.md
+      - 第2回 Haiku 4.5: experiments/2026-09-24-npc-robustness-haiku45.md
+      - 本実験（途中）Opus 5: experiments/2026-09-25-npc-robustness-opus5.md
+      - 第5回 v2の会話の流れ: experiments/2026-09-25-v2-flow-haiku45.md
+      - 第6回 並列化の遅延: experiments/2026-09-25-latency-parallel-haiku45.md
+      - 記事テンプレート: templates/knowledge-entry.md
+  - English:
+      - AI characters: knowledge/en/ai-characters/README.md
+      - Design patterns: knowledge/en/ai-characters/patterns.md
+      - AI character case studies: knowledge/en/ai-characters/case-studies.md
+      - Evaluation: knowledge/en/ai-characters/evaluation.md
+      - "Playbook: persuasion NPCs": knowledge/en/ai-characters/playbook-persuasion-npc.md
+      - Film/music/anime case studies: knowledge/en/domains/case-studies.md
+      - "Playbook: disclosing AI use": knowledge/en/foundations/ai-disclosure-guide.md
+      - Regulation by country: knowledge/en/ethics-legal/by-country/README.md
+      - Japan: knowledge/en/ethics-legal/by-country/japan.md
+      - United States: knowledge/en/ethics-legal/by-country/us.md
+      - EU: knowledge/en/ethics-legal/by-country/eu.md
+      - China: knowledge/en/ethics-legal/by-country/china.md
+      - South Korea: knowledge/en/ethics-legal/by-country/korea.md

@@ -19,6 +19,8 @@
 
 詳細な戦略は [`STRATEGY.md`](STRATEGY.md) を参照。
 
+**サイト版（検索・タグ付き）**: https://kouki0727mickey.github.io/addictive-game/
+
 ## 構成
 
 ```
@@ -52,6 +54,7 @@ knowledge/
 └── _verification-log.md       事実確認ログ
 templates/
 └── knowledge-entry.md         新規記事テンプレート
+tools/build_site.py            サイト版の生成（mkdocs.yml、.github/workflows/pages.yml）
 prototype/                     会話NPCの堅牢性を測る実験環境（Python）
 experiments/                   実験記録（一次情報）
 ```
