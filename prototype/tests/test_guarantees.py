@@ -116,6 +116,15 @@ class V2GuaranteesUnderFullyFooledJudge(unittest.TestCase):
         self.assertEqual(state.trust["go"], after_first)
 
 
+class ParallelModeMatchesSequential(unittest.TestCase):
+    def test_same_outcomes_with_mock(self):
+        import functools
+        for s in SCENARIOS:
+            a = run_scenario(GuardedEngineV2, MockBackend(), s)
+            b = run_scenario(functools.partial(GuardedEngineV2, parallel=True), MockBackend(), s)
+            self.assertEqual(a, b, s.id)
+
+
 class ExitOnRepeatedManipulation(unittest.TestCase):
     def test_npc_departs_after_two_strikes(self):
         # P27: 操作の試みが2回続くと、キャラは取り合わなくなる

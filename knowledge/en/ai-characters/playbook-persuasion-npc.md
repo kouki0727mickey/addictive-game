@@ -83,7 +83,7 @@ Measured per call:
 | Claude Haiku 4.5 | 1.7 s | ~$0.0011 | ~$0.002, ~3.5 s |
 
 - Because v2 turns the judge's job into classification, **Haiku 4.5 classified well enough** (misclassifications were absorbed by fact checks).
-- 💡 Calling the judge and the character in parallel brings latency close to a single call.
+- Calling the judge and the character **in parallel cut latency by about 20%** (Claude Haiku 4.5: 3.03 → 2.42 s, [round 6](../../../experiments/2026-09-24-npc-robustness.md)). Most of the wait is the character's reply, so 💡 shorter replies or streaming the first tokens would help more. In parallel mode the character's line can't reflect this turn's verdict, so signal changes like the gate opening with fixed lines or effects.
 - 💡 Start with small models for both; upgrade the judge only if classification accuracy becomes a problem.
 
 ## Checklist

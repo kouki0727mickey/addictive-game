@@ -56,7 +56,8 @@ npc_lab/
 ├── scenarios.py  攻撃13種（うち判定器狙い5種）・正当なプレイ4種・判断が分かれるもの1種
 ├── run_eval.py   実行と結果の表の出力
 ├── probe_judge.py 判定器（P17）の採点を発言ごとに表示する調査用スクリプト（`--judge v2` で主張の分類も表示）
-└── replay_probe.py probe_judge の記録を v2 のエンジンに流し直す（APIを呼ばない）
+├── replay_probe.py probe_judge の記録を v2 のエンジンに流し直す（APIを呼ばない）
+└── latency_probe.py 判定器とキャラの呼び出しを順番／同時で行ったときの待ち時間を比べる
 tests/
 └── test_guarantees.py  LLMが完全にだまされても守れること／守れないことのテスト
 ```

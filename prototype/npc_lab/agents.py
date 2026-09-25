@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import unicodedata
+from concurrent.futures import ThreadPoolExecutor
 
 from .llm import Backend
 from .world import CHARACTERS, GATE_TRUST_REQUIRED, MAP_PRICE, Character, GameState
@@ -106,7 +107,10 @@ class GuardedEngine:
     label = "guarded"
     MAX_STRIKES = 2
 
-    def __init__(self, backend: Backend):
+    def __init__(self, backend: Backend, parallel: bool = False):
+        # parallel=True: 判定器とキャラの呼び出しを同時に行う（待ち時間を減らす）。
+        # 代わりに、キャラの返答にはそのターンの判定結果が反映されない
+        self.parallel = parallel
         self.backend = backend
         self.history: dict[str, list[dict]] = {}
         self.said: dict[str, set[str]] = {}
@@ -128,7 +132,14 @@ class GuardedEngine:
         if npc in state.departed:
             return f"（{c.name}はもう取り合ってくれない）"
 
+        if self.parallel:
+            return self._talk_parallel(state, npc, text)
+
         verdict = self._judge(c, text)
+        self._apply_verdict(state, npc, text, verdict)
+        return self._character_reply(state, npc, text)
+
+    def _apply_verdict(self, state: GameState, npc: str, text: str, verdict: dict) -> None:
         if verdict["manipulation"]:  # P27
             state.strikes[npc] = state.strikes.get(npc, 0) + 1
             if state.strikes[npc] >= self.MAX_STRIKES:
@@ -139,6 +150,8 @@ class GuardedEngine:
 
         self._apply_rules(state, npc)
 
+    def _character_reply(self, state: GameState, npc: str, text: str) -> str:
+        c = CHARACTERS[npc]
         # P26: プレイヤーの入力は常に「セリフ」として包む
         system = (
             _character_block(c)
@@ -151,6 +164,22 @@ class GuardedEngine:
         out = self.backend.generate(system, hist, GUARDED_SCHEMA)
         hist.append({"role": "assistant", "content": out["say"]})
         return out["say"]
+
+    def _talk_parallel(self, state: GameState, npc: str, text: str) -> str:
+        c = CHARACTERS[npc]
+        before = (set(state.flags), set(state.departed))
+        with ThreadPoolExecutor(max_workers=2) as pool:
+            judged = pool.submit(self._judge, c, text)
+            reply = pool.submit(self._character_reply, state, npc, text)  # このターン前の事実で返答
+            verdict = judged.result()
+            say = reply.result()
+        self._apply_verdict(state, npc, text, verdict)
+        # このターンで事実が変わったら、決まった台詞で知らせる（キャラの返答は古い事実に基づくため）
+        if npc in state.departed and npc not in before[1]:
+            return f"（{c.name}はもう取り合ってくれない）"
+        if "gate_open" in state.flags and "gate_open" not in before[0]:
+            return say + "\n（門が開いた）"
+        return say
 
     def _update_trust(self, state: GameState, text: str, verdict: dict) -> None:
         key = unicodedata.normalize("NFKC", text).strip()
@@ -226,8 +255,8 @@ class GuardedEngineV2(GuardedEngine):
 
     label = "guarded_v2"
 
-    def __init__(self, backend: Backend):
-        super().__init__(backend)
+    def __init__(self, backend: Backend, parallel: bool = False):
+        super().__init__(backend, parallel)
         self.credited: set[str] = set()
         self.unverified_gain = 0
 
