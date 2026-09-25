@@ -72,7 +72,7 @@ experiments/                   実験記録（一次情報）
 | `/game-ai-character` | 会話NPC・AIキャラクターを設計する |
 | `/game-release-check` | 公開前に、健全性・AI開示・国別法務・ストア規約を点検する |
 
-別のリポジトリのセッションからは、このリポジトリ（public）を clone して `knowledge/` を読む。試行例: [ORBIT SWITCH の公開前チェック](studio/orbit-switch/release-check-2026-09-25.md)
+別のリポジトリのセッションからは、このリポジトリ（public）を clone して `knowledge/` を読む。試行例: [ORBIT SWITCH の公開前チェック](studio/orbit-switch/release-check-2026-09-25.md)、[ORBIT SWITCH の AI 機能の企画書](studio/orbit-switch/concept.md)
 
 ## 成熟度レベル
 
