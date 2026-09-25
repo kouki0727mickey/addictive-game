@@ -79,6 +79,7 @@ nav:
       - 第6回 並列化の遅延: experiments/2026-09-25-latency-parallel-haiku45.md
       - 記事テンプレート: templates/knowledge-entry.md
   - 制作:
+      - "ORBIT SWITCH: AI機能の企画書": studio/orbit-switch/concept.md
       - "ORBIT SWITCH: 公開前チェック": studio/orbit-switch/release-check-2026-09-25.md
   - English:
       - AI characters: knowledge/en/ai-characters/README.md

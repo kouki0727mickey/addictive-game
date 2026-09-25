@@ -48,6 +48,7 @@ AI×エンタメの情報は、ニュース（速いが浅い）、学術論文�
 ### Phase 3.5: ナレッジを制作に使う
 - [x] `CLAUDE.md` とゲーム制作用スキル3つ（企画・AIキャラ設計・公開前チェック）
 - [x] 試行: ORBIT SWITCH の公開前チェック → [studio/orbit-switch](studio/orbit-switch/release-check-2026-09-25.md)
+- [x] 試行: ORBIT SWITCH に AI 機能を足す企画書 → [studio/orbit-switch](studio/orbit-switch/concept.md)
 - [ ] 制作で得た学びをナレッジに戻す（App Store・Google Play の規約、AIコーディングで作ったゲームの開示）
 
 ### Phase 4: 外部化
