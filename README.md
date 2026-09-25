@@ -27,7 +27,8 @@ knowledge/
 ├── foundations/               横断的な基礎
 │   ├── tech-stack.md          エンタメで使うAI技術の地図
 │   ├── engagement-design.md   「ハマる」の科学とAI（本リポジトリの核）
-│   └── ai-native-entertainment.md  AIネイティブなエンタメの設計原則
+│   ├── ai-native-entertainment.md  AIネイティブなエンタメの設計原則
+│   └── ai-disclosure-guide.md  実践ガイド: 作品でのAI利用の開示（事例44件から）
 ├── ai-characters/             ★重点領域: AIキャラクター・会話NPC
 │   ├── patterns.md            設計パターン集（38パターン）
 │   ├── case-studies.md        事例分析（14件）
@@ -46,7 +47,7 @@ knowledge/
 ├── ethics-legal/
 │   ├── ethics-legal.md        著作権・肖像/声・依存性・透明性（論点別）
 │   └── by-country/            国別（日本・米国・EU・中国・韓国）と比較表
-├── en/ai-characters/          重点領域の英語版（English edition）
+├── en/                        英語版（English edition）: ai-characters, foundations/ai-disclosure-guide
 ├── glossary.md                用語集
 └── _verification-log.md       事実確認ログ
 templates/
