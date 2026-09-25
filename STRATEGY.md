@@ -45,6 +45,11 @@ AI×エンタメの情報は、ニュース（速いが浅い）、学術論文�
 - [ ] AI生成アセットの制作コスト比較実験
 - [ ] プレイヤー体験の定量評価フレームの検証
 
+### Phase 3.5: ナレッジを制作に使う
+- [x] `CLAUDE.md` とゲーム制作用スキル3つ（企画・AIキャラ設計・公開前チェック）
+- [x] 試行: ORBIT SWITCH の公開前チェック → [studio/orbit-switch](studio/orbit-switch/release-check-2026-09-25.md)
+- [ ] 制作で得た学びをナレッジに戻す（App Store・Google Play の規約、AIコーディングで作ったゲームの開示）
+
 ### Phase 4: 外部化
 - [x] 静的サイト化（検索・タグ付き、GitHub Pages）→ https://kouki0727mickey.github.io/addictive-game/
 - [ ] 英語版の作成（済: AIキャラクター一式、事例分析30件、国別法務、開示ガイド。残り: 基礎・領域別の記事）

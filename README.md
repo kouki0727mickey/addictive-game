@@ -56,8 +56,23 @@ templates/
 └── knowledge-entry.md         新規記事テンプレート
 tools/build_site.py            サイト版の生成（mkdocs.yml、.github/workflows/pages.yml）
 prototype/                     会話NPCの堅牢性を測る実験環境（Python）
+studio/                        ナレッジを使ったゲーム制作の成果物（企画書・設計書・公開前チェック）
+.claude/skills/                ゲーム制作用スキル: /game-concept, /game-ai-character, /game-release-check
+CLAUDE.md                      セッション共通の作業ルール（ナレッジの参照・成果の戻し方）
 experiments/                   実験記録（一次情報）
 ```
+
+## ゲーム制作に使う
+
+このリポジトリで Claude Code のセッションを始めると、`CLAUDE.md` とスキルが自動で読み込まれる。
+
+| スキル | 使う場面 |
+|---|---|
+| `/game-concept` | AIを使ったゲーム（既存ゲームへのAI機能を含む）の企画書を作る |
+| `/game-ai-character` | 会話NPC・AIキャラクターを設計する |
+| `/game-release-check` | 公開前に、健全性・AI開示・国別法務・ストア規約を点検する |
+
+別のリポジトリのセッションからは、このリポジトリ（public）を clone して `knowledge/` を読む。試行例: [ORBIT SWITCH の公開前チェック](studio/orbit-switch/release-check-2026-09-25.md)
 
 ## 成熟度レベル
 

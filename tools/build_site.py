@@ -11,7 +11,7 @@ import shutil
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "_site_src")
 REPO = "https://github.com/kouki0727mickey/addictive-game/blob/main"
-SOURCES = ["README.md", "STRATEGY.md", "knowledge", "experiments", "prototype/README.md", "templates"]
+SOURCES = ["README.md", "STRATEGY.md", "knowledge", "experiments", "prototype/README.md", "templates", "studio"]
 LINK = re.compile(r"\]\(([^)\s]+)\)")
 
 
