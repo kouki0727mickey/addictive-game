@@ -9,6 +9,7 @@ tags: [eu, ai-act, transparency, labeling, gdpr]
 # EU — AI × エンタメの法規制
 
 > ⚠️ 法的助言ではない。→ [国別比較](README.md) ／ [横断的な整理](../ethics-legal.md)
+> English edition: [../../en/ethics-legal/by-country/eu.md](../../en/ethics-legal/by-country/eu.md)
 
 ## 学習
 - テキスト・データマイニング（TDM）例外。権利者はオプトアウトできる

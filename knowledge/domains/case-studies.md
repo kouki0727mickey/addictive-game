@@ -11,6 +11,7 @@ tags: [case-study, film, music, anime, manga, disclosure, rights]
 > AIキャラクター・会話NPCの事例は [ai-characters/case-studies](../ai-characters/case-studies.md)（C01〜C14）を参照。
 > 事例から作った開示の実践ガイド → [AI利用の開示](../foundations/ai-disclosure-guide.md)
 > 凡例: 事実には出典を付けた。💡 は分析・仮説。
+> English edition: [../en/domains/case-studies.md](../en/domains/case-studies.md)
 
 ## 一覧
 

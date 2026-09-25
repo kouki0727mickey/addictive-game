@@ -10,6 +10,7 @@ tags: [korea, ai-basic-act, labeling]
 
 > ⚠️ 法的助言ではない。→ [国別比較](README.md)
 > 韓国政府の原文は未確認。以下は法律事務所・米国商務省などの解説に基づく（確認区分B）。
+> English edition: [../../en/ethics-legal/by-country/korea.md](../../en/ethics-legal/by-country/korea.md)
 
 ## 学習（著作権）
 - 原則として、著作物をAIの学習に使うには権利者の許諾が必要（フェアユースなどの例外に当たる場合を除く）

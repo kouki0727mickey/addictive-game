@@ -9,6 +9,7 @@ tags: [us, fair-use, publicity, companion, labor]
 # 米国 — AI × エンタメの法規制
 
 > ⚠️ 法的助言ではない。→ [国別比較](README.md) ／ [横断的な整理](../ethics-legal.md)
+> English edition: [../../en/ethics-legal/by-country/us.md](../../en/ethics-legal/by-country/us.md)
 
 ## 学習（フェアユース）
 | 事件 | 判断 | ポイント |

@@ -10,6 +10,7 @@ tags: [china, labeling, companion, minors]
 
 > ⚠️ 法的助言ではない。→ [国別比較](README.md) ／ [横断的な整理](../ethics-legal.md)
 > 中国当局（CAC）の原文は未確認。以下は法律事務所などの解説に基づく（確認区分B）。
+> English edition: [../../en/ethics-legal/by-country/china.md](../../en/ethics-legal/by-country/china.md)
 
 ## 学習
 - **生成人工知能サービス管理暫定弁法**（2023年7月13日公布、8月15日施行）第7条: 学習（事前学習・追加学習）では、

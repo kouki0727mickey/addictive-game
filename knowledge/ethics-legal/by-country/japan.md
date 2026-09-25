@@ -9,6 +9,7 @@ tags: [japan, copyright, publicity, voice]
 # 日本 — AI × エンタメの法規制
 
 > ⚠️ 法的助言ではない。→ [国別比較](README.md) ／ [横断的な整理](../ethics-legal.md)
+> English edition: [../../en/ethics-legal/by-country/japan.md](../../en/ethics-legal/by-country/japan.md)
 
 ## 学習
 - **著作権法第30条の4**: 情報解析など、著作物に表現された思想・感情の「享受」を目的としない利用は、一定の条件で許諾なく行える

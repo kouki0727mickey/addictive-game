@@ -1,6 +1,6 @@
 # addictive-game
 
-> English: the focus area on AI characters and conversational NPCs is available in English at [knowledge/en/ai-characters](knowledge/en/ai-characters/README.md).
+> English: available in English — [AI characters & conversational NPCs](knowledge/en/ai-characters/README.md), [film/music/anime case studies](knowledge/en/domains/case-studies.md), [regulation by country](knowledge/en/ethics-legal/by-country/README.md), [AI disclosure playbook](knowledge/en/foundations/ai-disclosure-guide.md).
 
 **AI × エンターテイメントの世界一のナレッジベース**を目指すリポジトリ。
 
@@ -47,7 +47,7 @@ knowledge/
 ├── ethics-legal/
 │   ├── ethics-legal.md        著作権・肖像/声・依存性・透明性（論点別）
 │   └── by-country/            国別（日本・米国・EU・中国・韓国）と比較表
-├── en/                        英語版（English edition）: ai-characters, foundations/ai-disclosure-guide
+├── en/                        英語版（English edition）: ai-characters, domains/case-studies, ethics-legal/by-country, foundations/ai-disclosure-guide
 ├── glossary.md                用語集
 └── _verification-log.md       事実確認ログ
 templates/

@@ -10,6 +10,7 @@ tags: [regulation, copyright, publicity, labeling, companion, japan, us, eu, chi
 
 > ⚠️ 一般的な情報整理であり、法的助言ではない。実務判断は最新の一次情報と専門家の確認に基づくこと。
 > 論点ごとの横断的な整理は [ethics-legal.md](../ethics-legal.md)。ここでは国・地域ごとに並べ直し、比較できるようにした。
+> English edition: [../../en/ethics-legal/by-country/README.md](../../en/ethics-legal/by-country/README.md)
 
 ## 比較表（2026年9月時点）
 
