@@ -55,6 +55,7 @@ nav:
   - 領域別:
       - ゲーム: knowledge/domains/games.md
       - 映像: knowledge/domains/film-video.md
+      - "実践ガイド: Filmora × Claude": knowledge/domains/playbook-filmora-ai-editing.md
       - 音楽: knowledge/domains/music.md
       - アニメ・マンガ: knowledge/domains/anime-manga.md
       - キャラクター・VTuber・ライブ: knowledge/domains/characters-vtuber-live.md

@@ -60,6 +60,18 @@ sagaftra.org、nysenate.gov、congress.gov、governor.ny.gov、indiewire.com、c
 | domains/case-studies.md | 追加16件（F06〜F10、M05〜M10、A06〜A10） | B | 各事例に付けた報道・公式ページ（検索結果の要約で照合） |
 | ethics-legal/by-country/korea.md | AI基本法（2026年1月22日施行、表示義務、過料猶予） | B | 米国商務省、Cooley、FPF の解説 |
 
+## 2026-09-25（Filmora 連携の実践ガイド）
+
+| 記事 | 項目 | 区分 | 根拠・次回の対応 |
+|---|---|---|---|
+| domains/playbook-filmora-ai-editing.md | Filmora に公式 API・MCP サーバーがない | C | AITuber の調査記事（2026-09-21時点）と Wondershare AILab 文書の範囲から推定。Wondershare の開発者向け発表を追跡 |
+| domains/playbook-filmora-ai-editing.md | AI Mate の4モード、STT/TTS/SRT、AILab API の機能 | A | Wondershare 公式ガイド・API 文書の本文 |
+| domains/playbook-filmora-ai-editing.md | 料金・AIクレジット | A | Wondershare 公式ストアの本文（地域・時期で変動） |
+| domains/playbook-filmora-ai-editing.md | 最新版 16.0.9 と v16 の新機能 | C | TechSpot のみ。Wondershare 公式のリリースノートで確認 |
+| domains/playbook-filmora-ai-editing.md | automate-filmora の対応範囲 | A | リポジトリの README 本文 |
+| domains/playbook-filmora-ai-editing.md | YouTube の AI 開示ルール | B | YouTube ヘルプ・公式ブログ（検索結果の要約で照合） |
+| domains/playbook-filmora-ai-editing.md | −14 LUFS、4K の推奨ビットレート、AIクレジット消費量 | C | 第三者の解説のみ。【要確認】として記載 |
+
 ## 追跡中の案件（結果が出たら更新）
 - Thomson Reuters v. ROSS 第3巡回区判決（AI学習のフェアユースに関する初の連邦控訴審判断）
 - UMG・Sony v. Suno（v6モデルを対象とした2026年9月の新訴訟を含む）
