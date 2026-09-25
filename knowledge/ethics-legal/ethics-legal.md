@@ -8,6 +8,8 @@ tags: [copyright, publicity, voice, regulation, ethics]
 
 # AI × エンタメの倫理と法務
 
+> 📍 国・地域ごとの整理と比較表は [by-country/](by-country/README.md)（日本・米国・EU・中国・韓国）。
+>
 > ⚠️ 本記事は一般的な情報整理であり、法的助言ではない。法制度・判例・ガイドラインは変化が速いため、
 > 実務判断は必ず最新の一次情報と専門家の確認に基づくこと。
 

@@ -48,6 +48,15 @@
 ### 取得できなかったサイト（ボット対策やネットワーク許可外）
 sagaftra.org、nysenate.gov、congress.gov、governor.ny.gov、indiewire.com、cac.gov.cn（正しいURLが未特定）。次回はブラウザ機能を使うか、別の公式ミラーを探す。
 
+## 2026-09-25（事例分析・国別法務の追加）
+
+| 記事 | 項目 | 区分 | 確認した資料 |
+|---|---|---|---|
+| domains/case-studies.md | 映像・音楽・アニメ/マンガの事例14件 | B | 各事例に付けた報道・公式発表（検索結果の本文要約で照合）。F04 のディズニー発表、A05 のCODA要望書、M04 のDeezer発表は当事者の公式ページ |
+| ethics-legal/by-country/china.md | 表示弁法（2025年9月1日施行） | B | Loeb & Loeb、China Law Translate の解説 |
+| ethics-legal/by-country/china.md | 生成AIサービス暫定弁法の学習データ要件 | C | 記憶に基づく。`【要確認】` を付けた |
+| ethics-legal/by-country/korea.md | AI基本法（2026年1月22日施行、表示義務、過料猶予） | B | 米国商務省、Cooley、FPF の解説 |
+
 ## 追跡中の案件（結果が出たら更新）
 - Thomson Reuters v. ROSS 第3巡回区判決（AI学習のフェアユースに関する初の連邦控訴審判断）
 - UMG・Sony v. Suno（v6モデルを対象とした2026年9月の新訴訟を含む）

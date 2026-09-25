@@ -27,9 +27,10 @@ AI×エンタメの情報は、ニュース（速いが浅い）、学術論文�
 ### Phase 2: 深さ
 - [x] 重点領域を「AIキャラクター・会話NPC」に決定 → [knowledge/ai-characters](knowledge/ai-characters/README.md)
 - [x] 重点領域の設計パターン集（38パターン）・事例分析（11件）・評価フレームワーク
-- [ ] 他の領域の事例分析を10本ずつ（成功・失敗の両方）
+- [x] 映像・音楽・アニメ/マンガの事例分析（計14件）→ [domains/case-studies](knowledge/domains/case-studies.md)
+- [ ] 各領域の事例を10本ずつに増やす（現在: 映像5・音楽4・アニメ/マンガ5）
 - [ ] 日本の事例の追加（公式IPキャラのAI化、AI VTuber）
-- [ ] 法務記事を国別（日・米・EU・中・韓）に分割
+- [x] 法務記事を国別（日・米・EU・中・韓）に分割し比較表を作成 → [by-country](knowledge/ethics-legal/by-country/README.md)
 - [x] `【要確認】` 箇所の出典付与（2026-09-24。すべて解消）→ [確認ログ](knowledge/_verification-log.md)
 - [ ] 確認区分BをA（一次情報の本文確認）に格上げ（2026-09-24: 6項目をA化済み、残りはボット対策のあるサイト）
 

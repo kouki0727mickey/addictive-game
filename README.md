@@ -39,11 +39,13 @@ knowledge/
 │   ├── music.md
 │   ├── anime-manga.md
 │   ├── characters-vtuber-live.md
-│   └── interactive-story.md
+│   ├── interactive-story.md
+│   └── case-studies.md        映像・音楽・アニメ/マンガの事例分析（14件）
 ├── business/
 │   └── business-models.md     収益モデル・コスト構造・参入戦略
 ├── ethics-legal/
-│   └── ethics-legal.md        著作権・肖像/声・依存性・透明性
+│   ├── ethics-legal.md        著作権・肖像/声・依存性・透明性（論点別）
+│   └── by-country/            国別（日本・米国・EU・中国・韓国）と比較表
 ├── en/ai-characters/          重点領域の英語版（English edition）
 ├── glossary.md                用語集
 └── _verification-log.md       事実確認ログ
