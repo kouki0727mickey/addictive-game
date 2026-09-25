@@ -105,6 +105,11 @@ class MockBackend:
             return {"say": "……（キャラとして返答する）", "emotion": "neutral", "intent": "none"}
         if role == "judge":
             return self._judge(system, messages)
+        if role == "judge_v2":
+            v = self._judge(system, messages)
+            text = _last_user(messages)
+            v["claims"] = [] if v["manipulation"] else [t for k, t in _CLAIM_WORDS if k in text]
+            return v
         raise ValueError(f"unknown role: {role}")
 
     # だまされやすいLLMを模した、素朴な実装の振る舞い
@@ -135,6 +140,11 @@ class MockBackend:
         score = 0 if manipulation else _argument_strength(text)
         return {"manipulation": manipulation, "persuasion": score, "quote": text[:40]}
 
+
+_CLAIM_WORDS = (
+    ("保証", "voucher"), ("薬を届け", "purpose"), ("荷を調べ", "inspection"),
+    ("身元", "identity"), ("山賊と戦", "combat"), ("代官", "authority"),
+)
 
 _ARGUMENTS = ("身元", "山賊と戦", "旅の目的", "薬を届け", "証人", "荷を調べ")
 

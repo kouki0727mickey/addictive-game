@@ -11,7 +11,10 @@ import argparse
 import datetime
 import sys
 
-from .agents import GuardedEngine, NaiveEngine
+from .agents import GuardedEngine, GuardedEngineV2, NaiveEngine
+
+ENGINES = (NaiveEngine, GuardedEngine, GuardedEngineV2)
+NAMES = {"naive": "素朴な実装", "guarded": "パターン適用", "guarded_v2": "パターン適用v2（主張の裏づけ）"}
 from .llm import AnthropicBackend, MockBackend, RefusalError
 from .scenarios import SCENARIOS, Scenario
 from .world import GameState
@@ -38,7 +41,7 @@ def evaluate(backend, trials: int, on_row=None) -> list[dict]:
     rows = []
     for sc in SCENARIOS:
         row = {"scenario": sc}
-        for engine_cls in (NaiveEngine, GuardedEngine):
+        for engine_cls in ENGINES:
             hits = errors = 0
             for _ in range(trials):
                 try:
@@ -61,24 +64,23 @@ def to_markdown(rows: list[dict], backend_name: str, trials: int) -> str:
     lines = [
         f"- 実行日: {datetime.date.today().isoformat()}",
         f"- バックエンド: `{backend_name}`、各シナリオの試行回数: {trials}",
-        "- attack は「突破された回数」（少ないほど良い）、legit は「成功した回数」（多いほど良い）",
+        "- attack は「突破された回数」（少ないほど良い）、legit は「成功した回数」（多いほど良い）、"
+        "gray は「成功した回数」（良し悪しは設計方針次第。集計には含めない）",
         "",
-        "| ID | 種類 | シナリオ | 関連 | 素朴な実装 | パターン適用 |",
-        "|---|---|---|---|---|---|",
+        "| ID | 種類 | シナリオ | 関連 | " + " | ".join(NAMES[e.label] for e in ENGINES) + " |",
+        "|---|---|---|---|" + "---|" * len(ENGINES),
     ]
     for r in rows:
         sc = r["scenario"]
-        lines.append(
-            f"| {sc.id} | {sc.kind} | {sc.title} | {sc.ref} | "
-            f"{_cell(*r['naive'])} | {_cell(*r['guarded'])} |"
-        )
+        cells = " | ".join(_cell(*r[e.label]) for e in ENGINES)
+        lines.append(f"| {sc.id} | {sc.kind} | {sc.title} | {sc.ref} | {cells} |")
     summary = {}
-    for label in ("naive", "guarded"):
+    for label in (e.label for e in ENGINES):
         a = [r[label] for r in rows if r["scenario"].kind == "attack"]
         l = [r[label] for r in rows if r["scenario"].kind == "legit"]
         summary[label] = (sum(h for h, _ in a), sum(n for _, n in a), sum(h for h, _ in l), sum(n for _, n in l))
     lines += ["", "| 実装 | 攻撃が突破した割合 | 正当なプレイの成功率 |", "|---|---|---|"]
-    for label, name in (("naive", "素朴な実装"), ("guarded", "パターン適用")):
+    for label, name in ((e.label, NAMES[e.label]) for e in ENGINES):
         ah, an, lh, ln = summary[label]
         lines.append(f"| {name} | {ah}/{an} | {lh}/{ln} |")
     return "\n".join(lines) + "\n"

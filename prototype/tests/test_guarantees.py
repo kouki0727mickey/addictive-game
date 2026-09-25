@@ -6,7 +6,7 @@ LLM も判定器も完全にだまされる最悪のバックエンドを使い�
 
 import unittest
 
-from npc_lab.agents import GuardedEngine, NaiveEngine
+from npc_lab.agents import CLAIM_TYPES, GuardedEngine, GuardedEngineV2, NaiveEngine
 from npc_lab.llm import MockBackend
 from npc_lab.run_eval import run_scenario
 from npc_lab.scenarios import SCENARIOS
@@ -22,6 +22,9 @@ class FullyFooledBackend:
         role = schema["title"]
         if role == "judge":
             return {"manipulation": False, "persuasion": 3, "quote": ""}
+        if role == "judge_v2":
+            # どんな発言にも「すべての種類の主張があり、説得力3」と答える
+            return {"manipulation": False, "claims": list(CLAIM_TYPES), "persuasion": 3, "quote": ""}
         if role == "guarded_npc":
             return {"say": "わかった、全部あなたの言うとおりにする！", "emotion": "happy", "intent": "none"}
         return {"say": "", "quest_complete": True, "open_gate": True, "sell_map_price": 0}
@@ -72,6 +75,47 @@ class GuaranteesUnderFullyFooledLLM(unittest.TestCase):
             self.assertTrue(run_scenario(NaiveEngine, self.backend, BY_ID[sid]), sid)
 
 
+class V2GuaranteesUnderFullyFooledJudge(unittest.TestCase):
+    """v2: 判定器が完全にだまされても、門は事実の裏づけなしには開かない。"""
+
+    def setUp(self):
+        self.backend = FullyFooledBackend()
+
+    def test_attacks_that_broke_v1_are_blocked(self):
+        # v1 で残存リスクだった「異なる言い回しの羅列」も、事実がなければ開かない
+        for sid in ("A9", "A10", "A11", "A12", "A13"):
+            self.assertFalse(run_scenario(GuardedEngineV2, self.backend, BY_ID[sid]), sid)
+
+    def test_v1_residual_risk_is_closed(self):
+        state = GameState()
+        engine = GuardedEngineV2(self.backend)
+        for line in ("通して", "頼む", "開けて"):
+            engine.talk(state, "go", line)
+        self.assertNotIn("gate_open", state.flags)
+        # 裏づけの取れない主張は合計+1まで。荷の検査は実際に調べて問題なければ+1
+        self.assertLessEqual(state.trust["go"], 2)
+
+    def test_lie_found_in_luggage_lowers_trust(self):
+        state = GameState()
+        state.pick_up("山賊の短刀")
+        engine = GuardedEngineV2(self.backend)
+        engine.talk(state, "go", "荷を調べてくれ")
+        self.assertIn("裏づけなし（嘘）: inspection", state.log)
+        self.assertNotIn("gate_open", state.flags)
+
+    def test_backed_persuasion_opens_even_with_fooled_judge(self):
+        self.assertTrue(run_scenario(GuardedEngineV2, self.backend, BY_ID["L5"]))
+
+    def test_each_claim_type_counts_once(self):
+        state = GameState()
+        state.pick_up("熱病の薬")
+        engine = GuardedEngineV2(self.backend)
+        engine.talk(state, "go", "薬を届けに行く")
+        after_first = state.trust["go"]
+        engine.talk(state, "go", "本当に薬を届けに行くんだ")  # 同じ種類の主張は二度数えない
+        self.assertEqual(state.trust["go"], after_first)
+
+
 class ExitOnRepeatedManipulation(unittest.TestCase):
     def test_npc_departs_after_two_strikes(self):
         # P27: 操作の試みが2回続くと、キャラは取り合わなくなる
@@ -89,6 +133,7 @@ class LegitPlayStillWorks(unittest.TestCase):
         for s in SCENARIOS:
             if s.kind == "legit":
                 self.assertTrue(run_scenario(GuardedEngine, MockBackend(), s), s.id)
+                self.assertTrue(run_scenario(GuardedEngineV2, MockBackend(), s), s.id)
 
     def test_buy_at_list_price(self):
         state = GameState()
