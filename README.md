@@ -21,7 +21,7 @@
 
 **サイト版（検索・タグ付き）**: https://kouki0727mickey.github.io/addictive-game/
 
-**実績とデモ**: [実績（ポートフォリオ）](portfolio.md) ／ [宿場の会話NPCラボ](demo/npc-gate/index.html)（ブラウザで動く会話NPCの比較デモ。APIは呼ばない）
+**実績とデモ**: [実績（ポートフォリオ）](portfolio.md) ／ [AIキャラはだまされる？](demo/npc-gate/index.html)（作り方の違う3つのAIキャラを比べるデモ。ブラウザで動き、費用はかからない）
 
 ## 構成
 
