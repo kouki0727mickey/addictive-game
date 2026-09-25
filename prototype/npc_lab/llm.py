@@ -25,6 +25,23 @@ class RefusalError(RuntimeError):
     pass
 
 
+class BudgetExceeded(RuntimeError):
+    """設定した上限額に達したので、これ以上APIを呼ばない。"""
+
+
+# 1Mトークンあたりの料金（ドル）。費用の見積もりと上限の判定に使う
+PRICES = {
+    "claude-opus-5": (5.0, 25.0),
+    "claude-sonnet-5": (2.0, 10.0),
+    "claude-haiku-4-5": (1.0, 5.0),
+}
+
+
+def estimate_usd(model: str, input_tokens: int, output_tokens: int) -> float:
+    pin, pout = PRICES.get(model, PRICES["claude-opus-5"])  # 不明なモデルは高めに見積もる
+    return (input_tokens * pin + output_tokens * pout) / 1_000_000
+
+
 class AnthropicBackend:
     """Claude API で構造化出力（JSON）を得る。
 
@@ -32,7 +49,7 @@ class AnthropicBackend:
     - 安全分類器による拒否に備え、サーバー側フォールバック（"default"）を有効にしている
     """
 
-    def __init__(self, model: str = "claude-opus-5", effort: str = "low"):
+    def __init__(self, model: str = "claude-opus-5", effort: str = "low", max_usd: float | None = None):
         import anthropic
 
         # クラウド環境では ANTHROPIC_API_KEY がセッションに渡らないことがあるため、
@@ -42,9 +59,12 @@ class AnthropicBackend:
         self.model = model
         self.effort = effort
         self.name = f"anthropic:{model}"
-        self.stats = {"calls": 0, "input_tokens": 0, "output_tokens": 0, "seconds": 0.0}
+        self.max_usd = max_usd
+        self.stats = {"calls": 0, "input_tokens": 0, "output_tokens": 0, "seconds": 0.0, "usd": 0.0}
 
     def generate(self, system: str, messages: list[dict], schema: dict) -> dict:
+        if self.max_usd is not None and self.stats["usd"] >= self.max_usd:
+            raise BudgetExceeded(f"上限 ${self.max_usd:.2f} に達した（使用 ${self.stats['usd']:.3f}）")
         schema = {k: v for k, v in schema.items() if k != "title"}
         output_config = {"format": {"type": "json_schema", "schema": schema}}
         # Haiku 4.5 は effort に対応しておらず、送ると 400 になる
@@ -64,6 +84,7 @@ class AnthropicBackend:
         self.stats["seconds"] += time.monotonic() - started
         self.stats["input_tokens"] += response.usage.input_tokens
         self.stats["output_tokens"] += response.usage.output_tokens
+        self.stats["usd"] += estimate_usd(self.model, response.usage.input_tokens, response.usage.output_tokens)
         if response.stop_reason == "refusal":
             raise RefusalError(str(getattr(response, "stop_details", "")))
         text = "".join(b.text for b in response.content if b.type == "text")

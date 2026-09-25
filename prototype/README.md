@@ -32,14 +32,19 @@ python3 -m unittest discover -s tests -t .
 
 # 実モデルでの実験（要 NPC_LAB_API_KEY、ANTHROPIC_API_KEY、または `ant auth login`）
 pip install -r requirements.txt
-python3 -m npc_lab.run_eval --backend anthropic --trials 5 \
-    --out ../experiments/$(date +%F)-npc-robustness-opus5.md
+# まず見積もる（APIは呼ばない）
+python3 -m npc_lab.run_eval --dry-run --model claude-haiku-4-5 --only A12,A13,L5 --engines guarded_v2
+# 必要な分だけ、上限付きで流す
+python3 -m npc_lab.run_eval --backend anthropic --model claude-haiku-4-5 \
+    --only A12,A13,L5 --engines guarded_v2 --max-usd 0.10 \
+    --out ../experiments/$(date +%F)-result.md
 ```
 
 - APIキーは `NPC_LAB_API_KEY` を優先して読む。Claude Code のクラウド環境では `ANTHROPIC_API_KEY` がセッションに渡らないため、こちらを使う
 - 既定のモデルは `claude-opus-5`、`effort` は `low`（会話NPCは待ち時間が重要なため）。`--model` と `--effort` で変えられる（`claude-haiku-4-5` は effort 非対応なので送らない）
 - 安全分類器による拒否に備えて、サーバー側フォールバック（`fallbacks: "default"`）を有効にしている
-- 費用の目安（推定）: 1試行で約190回のAPI呼び出し（3実装）。`claude-opus-5` で1試行あたり2.5ドル前後。`--trials 5` で12〜13ドル前後
+- **費用の方針**: 最小コストで進める（[STRATEGY.md](../STRATEGY.md) の「API試験の費用方針」）。`--max-usd`（既定 $0.50）で上限を付け、`--only` と `--engines` で必要な分だけ流す
+- 費用の目安: 全シナリオ・3実装・5試行を `claude-opus-5` で流すと約1,150回・約7.5ドル。v2 の4シナリオを `claude-haiku-4-5` で1試行なら26回・約3セント（実測）
 
 ## 構成
 
