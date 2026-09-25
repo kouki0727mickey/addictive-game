@@ -31,7 +31,8 @@ knowledge/
 ├── ai-characters/             ★重点領域: AIキャラクター・会話NPC
 │   ├── patterns.md            設計パターン集（38パターン）
 │   ├── case-studies.md        事例分析（14件）
-│   └── evaluation.md          評価フレームワークとリリース判定
+│   ├── evaluation.md          評価フレームワークとリリース判定
+│   └── playbook-persuasion-npc.md  実践ガイド: 説得をゲームにする会話NPC（自前の実験に基づく）
 ├── domains/                   領域別
 │   ├── games.md
 │   ├── film-video.md

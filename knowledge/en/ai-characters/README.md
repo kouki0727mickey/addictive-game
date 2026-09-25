@@ -26,6 +26,7 @@ game NPCs, AI companions, AI VTubers, and official IP characters brought to life
 | [patterns.md](patterns.md) | 38 design patterns in 7 groups | A reference while planning and designing |
 | [case-studies.md](case-studies.md) | 14 case studies (3 from Japan), successes and failures | Evidence of what has actually happened |
 | [evaluation.md](evaluation.md) | A five-layer evaluation framework with release gates | Development, QA and ship decisions |
+| [playbook-persuasion-npc.md](playbook-persuasion-npc.md) | **Playbook**: building NPCs that make persuasion a game (from our own experiments) | When implementing |
 
 ## Five principles (the catalog in one screen)
 1. **Decide the conversation scope first.** Experience, cost and legal classification all follow from it (P01).

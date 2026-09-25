@@ -27,6 +27,7 @@ tags: [ai-character, npc, llm, engagement, focus-area]
 | [patterns.md](patterns.md) | 設計パターン集（38パターン、7分類） | 企画・設計時の辞書 |
 | [case-studies.md](case-studies.md) | 事例分析（14件、うち日本3件。成功と失敗の両方） | 「過去に何が起きたか」の根拠 |
 | [evaluation.md](evaluation.md) | 評価フレームワーク（5層の評価とリリース判定） | 開発・QA・リリース判断 |
+| [playbook-persuasion-npc.md](playbook-persuasion-npc.md) | **実践ガイド**: 説得・交渉をゲームにする会話NPCの作り方（自前の実験に基づく、L4） | 実装するとき |
 
 ## 一枚でまとめると
 
