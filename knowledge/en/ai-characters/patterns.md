@@ -144,6 +144,8 @@ last_reviewed: 2026-09-24
 ### P19 Clue-Gated Dialogue
 - **Problem**: If a smooth talker can extract anything, exploration and deduction lose meaning.
 - **Solution**: Unlock key information only when game state shows the player *has* or *presented* a specific item or clue (same mechanism as P06).
+- **Applied to persuasion**: Have the judge only classify *what kind* of claim was made (a voucher, a stated purpose, an offer to be searched…) and let the engine verify it against game facts. Unverifiable claims add at most +1 in total; each claim type counts once.
+- **Verification (2026-09-25, [rounds 3–4](../../../experiments/2026-09-24-npc-robustness.md))**: Even with a fully fooled judge, all judge-targeted attacks (A9–A13) were blocked. Replaying the real classifications from Claude Opus 5 and Claude Haiku 4.5, every attack was blocked and fact-backed persuasion (L5) succeeded in all combinations. The trade-off: talking your way through without evidence is no longer possible, so the game needs ways to gather evidence.
 
 ### P20 Act, Not Just Talk
 - **Problem**: Talk-only NPCs lose novelty fast.
