@@ -2,7 +2,8 @@
 
 Usage: python tools/build_site.py  (then: mkdocs build)
 Markdown files keep their relative paths, so links between articles still work.
-Links to non-Markdown files (e.g. prototype code) are rewritten to GitHub URLs.
+Links to non-Markdown files (e.g. prototype code) are rewritten to GitHub URLs,
+except files under STATIC (browser demos), which are copied into the site as they are.
 """
 import os
 import re
@@ -11,7 +12,8 @@ import shutil
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, "_site_src")
 REPO = "https://github.com/kouki0727mickey/addictive-game/blob/main"
-SOURCES = ["README.md", "STRATEGY.md", "knowledge", "experiments", "prototype/README.md", "templates", "studio"]
+SOURCES = ["README.md", "STRATEGY.md", "portfolio.md", "knowledge", "experiments", "prototype/README.md", "templates", "studio"]
+STATIC = ["demo"]  # copied as-is and served from the site
 LINK = re.compile(r"\]\(([^)\s]+)\)")
 
 
@@ -26,6 +28,8 @@ def rewrite(text, src_rel):
             if repo_path == "README.md":  # the top README becomes index.md
                 rel = os.path.relpath("index.md", os.path.dirname(src_rel) or ".")
                 return f"]({rel}{'#' + anchor if anchor else ''})"
+            return m.group(0)
+        if repo_path.split(os.sep)[0] in STATIC and os.path.exists(os.path.join(ROOT, repo_path)):
             return m.group(0)
         return f"]({REPO}/{repo_path}{'#' + anchor if anchor else ''})"
     return LINK.sub(fix, text)
@@ -52,6 +56,8 @@ def main():
             for name in files:
                 if name.endswith(".md"):
                     copy_md(os.path.relpath(os.path.join(dirpath, name), ROOT))
+    for src in STATIC:
+        shutil.copytree(os.path.join(ROOT, src), os.path.join(OUT, src))
     print(f"collected into {OUT}")
 
 

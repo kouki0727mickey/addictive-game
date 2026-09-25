@@ -37,6 +37,8 @@ markdown_extensions:
 nav:
   - ホーム:
       - index.md
+      - 実績（ポートフォリオ）: portfolio.md
+      - "デモ: 宿場の会話NPCラボ": demo/npc-gate/index.html
       - 全体マップ: knowledge/00_landscape.md
       - 世界一への戦略: STRATEGY.md
       - 用語集: knowledge/glossary.md

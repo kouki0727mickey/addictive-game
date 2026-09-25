@@ -21,6 +21,8 @@
 
 **サイト版（検索・タグ付き）**: https://kouki0727mickey.github.io/addictive-game/
 
+**実績とデモ**: [実績（ポートフォリオ）](portfolio.md) ／ [宿場の会話NPCラボ](demo/npc-gate/index.html)（ブラウザで動く会話NPCの比較デモ。APIは呼ばない）
+
 ## 構成
 
 ```
@@ -57,6 +59,8 @@ templates/
 tools/build_site.py            サイト版の生成（mkdocs.yml、.github/workflows/pages.yml）
 prototype/                     会話NPCの堅牢性を測る実験環境（Python）
 studio/                        ナレッジを使ったゲーム制作の成果物（企画書・設計書・公開前チェック）
+demo/                          ブラウザで動くデモ（サイトにそのまま載る）
+portfolio.md                   実績（ポートフォリオ）
 .claude/skills/                ゲーム制作用スキル: /game-concept, /game-ai-character, /game-release-check
 CLAUDE.md                      セッション共通の作業ルール（ナレッジの参照・成果の戻し方）
 experiments/                   実験記録（一次情報）
