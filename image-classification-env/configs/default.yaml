@@ -1,0 +1,35 @@
+# ===== データ =====
+data:
+  # data_dir/train/<クラス名>/*.jpg の形で置く。
+  # data_dir/val がなければ train から val_ratio で自動分割する（クラス比を保つ）。
+  # data_dir/test があれば evaluate.py が使う。
+  data_dir: data/dataset
+  val_ratio: 0.2
+  img_size: 224
+  num_workers: 4          # Windows で止まる場合は 0 にする
+
+# ===== モデル =====
+model:
+  # timm のモデル名。軽い順: mobilenetv3_large_100, resnet18, efficientnet_b0, convnext_tiny, vit_base_patch16_224
+  name: efficientnet_b0
+  pretrained: true        # ImageNet 事前学習済みの重みを使う（初回はダウンロードが発生）
+  drop_rate: 0.2
+
+# ===== 学習 =====
+train:
+  epochs: 20
+  batch_size: 32          # GPU メモリ不足（CUDA out of memory）なら 16, 8 と下げる
+  lr: 3.0e-4
+  weight_decay: 1.0e-4
+  label_smoothing: 0.1
+  warmup_epochs: 1
+  freeze_backbone_epochs: 0   # >0 で最初の N エポックは分類層だけ学習（データが少ないとき有効）
+  class_weighting: false      # クラス数が偏っているとき true
+  amp: true                   # GPU で混合精度（CPU では自動で無効）
+  early_stopping_patience: 5
+  seed: 42
+
+# ===== 出力 =====
+output:
+  dir: outputs            # outputs/<run名>/ に best.pt, history.csv, TensorBoard ログを保存
+  run_name: null          # null なら日時から自動

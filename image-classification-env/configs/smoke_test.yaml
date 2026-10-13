@@ -1,0 +1,25 @@
+# 動作確認用（合成画像・CPUでも数十秒）。verify_env が使う。
+data:
+  data_dir: data/smoke
+  val_ratio: 0.25
+  img_size: 64
+  num_workers: 0
+model:
+  name: resnet18
+  pretrained: false
+  drop_rate: 0.0
+train:
+  epochs: 8
+  batch_size: 16
+  lr: 1.0e-3
+  weight_decay: 0.0
+  label_smoothing: 0.0
+  warmup_epochs: 0
+  freeze_backbone_epochs: 0
+  class_weighting: false
+  amp: true
+  early_stopping_patience: 10
+  seed: 0
+output:
+  dir: outputs
+  run_name: smoke_test

@@ -1,0 +1,10 @@
+# torch / torchvision は setup スクリプトが GPU の有無に合わせて別途入れる
+timm>=1.0.9
+pyyaml>=6.0
+numpy>=1.26
+pillow>=10.0
+scikit-learn>=1.4
+matplotlib>=3.8
+tqdm>=4.66
+tensorboard>=2.16
+onnx>=1.16
