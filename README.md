@@ -56,8 +56,9 @@ templates/
 └── knowledge-entry.md         新規記事テンプレート
 tools/build_site.py            サイト版の生成（mkdocs.yml、.github/workflows/pages.yml）
 prototype/                     会話NPCの堅牢性を測る実験環境（Python）
+tools/pptx2jira/               PowerPoint → Markdown（vLLM）→ Jira 課題の取り込み（スキル /pptx-to-jira）
 studio/                        ナレッジを使ったゲーム制作の成果物（企画書・設計書・公開前チェック）
-.claude/skills/                ゲーム制作用スキル: /game-concept, /game-ai-character, /game-release-check
+.claude/skills/                スキル: /game-concept, /game-ai-character, /game-release-check（ゲーム制作）、/pptx-to-jira, /pptx-to-markdown（資料の取り込み）
 CLAUDE.md                      セッション共通の作業ルール（ナレッジの参照・成果の戻し方）
 experiments/                   実験記録（一次情報）
 ```

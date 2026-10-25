@@ -1,0 +1,150 @@
+{
+  "version": 1,
+  "source": {"file": "sample.pptx", "sha256": "3588d9c599da312f07acce0d05c43628b9a924d618b5037a3da576f54b6cd483"},
+  "project_key": "PAY",
+  "plan": {
+    "epics": [
+      {
+        "ref": "E1",
+        "summary": "新決済基盤の機能要件を満たす",
+        "description": "スライド2の機能要件。\n\n出典: スライド 2",
+        "labels": ["payments"],
+        "source_slides": [2],
+        "issues": [
+          {
+            "ref": "E1-1",
+            "type": "story",
+            "summary": "ユーザー認証をSSOに統一する",
+            "description": "社内管理画面と加盟店ポータルの認証を SSO に統一する。\n\n出典: スライド 2",
+            "acceptance_criteria": ["社内管理画面と加盟店ポータルの両方で SSO ログインできる"],
+            "priority": "",
+            "due_date": "2026-11-30",
+            "assignee_hint": "認証チーム",
+            "labels": ["auth", "sso login"],
+            "source_slides": [2],
+            "evidence": ["ユーザー認証をSSOに統一する", "期限は11月末"],
+            "depends_on": [],
+            "inferred_fields": ["due_date"],
+            "subtasks": []
+          },
+          {
+            "ref": "E1-2",
+            "type": "task",
+            "summary": "決済APIのレスポンスを300ms以内にする",
+            "description": "**決済APIのレスポンスを300ms以内にする**\n\n出典: スライド 2",
+            "acceptance_criteria": ["決済APIのレスポンスが300ms以内"],
+            "priority": "High",
+            "due_date": "",
+            "assignee_hint": "",
+            "labels": ["performance"],
+            "source_slides": [2],
+            "evidence": ["決済APIのレスポンスを300ms以内にする"],
+            "depends_on": ["E2-1"],
+            "inferred_fields": ["priority"],
+            "subtasks": []
+          },
+          {
+            "ref": "E1-3",
+            "type": "task",
+            "summary": "監査ログを7年保管する",
+            "description": "出典: スライド 2",
+            "acceptance_criteria": ["監査ログが7年間保管される"],
+            "priority": "",
+            "due_date": "",
+            "assignee_hint": "",
+            "labels": [],
+            "source_slides": [2],
+            "evidence": ["監査ログを7年保管する"],
+            "depends_on": [],
+            "inferred_fields": [],
+            "subtasks": []
+          },
+          {
+            "ref": "E1-4",
+            "type": "task",
+            "summary": "障害時は5分以内に切り替える",
+            "description": "出典: スライド 2",
+            "acceptance_criteria": ["障害時に5分以内に切り替わる"],
+            "priority": "",
+            "due_date": "",
+            "assignee_hint": "",
+            "labels": [],
+            "source_slides": [2],
+            "evidence": ["障害時は5分以内に切り替える"],
+            "depends_on": [],
+            "inferred_fields": [],
+            "subtasks": []
+          }
+        ]
+      },
+      {
+        "ref": "E2",
+        "summary": "決済処理をリアルタイム化する",
+        "description": "スライド3〜4の課題とスケジュール。\n\n出典: スライド 3, 4",
+        "labels": ["payments"],
+        "source_slides": [3, 4],
+        "issues": [
+          {
+            "ref": "E2-1",
+            "type": "task",
+            "summary": "リアルタイム決済の設計をする",
+            "description": "夜間バッチで遅い決済処理のリアルタイム化に向けた設計。\n\n| フェーズ | 期間 | 担当 |\n|---|---|---|\n| 設計 | 10月 | 決済チーム |\n\n出典: スライド 3, 4",
+            "acceptance_criteria": [],
+            "priority": "",
+            "due_date": "",
+            "assignee_hint": "決済チーム",
+            "labels": [],
+            "source_slides": [3, 4],
+            "evidence": ["リアルタイム化が必要", "設計"],
+            "depends_on": [],
+            "inferred_fields": [],
+            "subtasks": []
+          },
+          {
+            "ref": "E2-2",
+            "type": "task",
+            "summary": "リアルタイム決済を実装する",
+            "description": "出典: スライド 4",
+            "acceptance_criteria": [],
+            "priority": "",
+            "due_date": "",
+            "assignee_hint": "決済チーム",
+            "labels": [],
+            "source_slides": [4],
+            "evidence": ["実装"],
+            "depends_on": ["E2-1"],
+            "inferred_fields": [],
+            "subtasks": [
+              {"ref": "E2-2-a", "summary": "11月に実装する", "description": "出典: スライド 4", "source_slides": [4], "evidence": ["11月〜12月"]}
+            ]
+          },
+          {
+            "ref": "E2-3",
+            "type": "task",
+            "summary": "新決済基盤へ移行する",
+            "description": "出典: スライド 4",
+            "acceptance_criteria": [],
+            "priority": "",
+            "due_date": "",
+            "assignee_hint": "インフラ",
+            "labels": [],
+            "source_slides": [4],
+            "evidence": ["移行"],
+            "depends_on": ["E2-2"],
+            "inferred_fields": [],
+            "subtasks": []
+          }
+        ]
+      }
+    ],
+    "unassigned_issues": [],
+    "open_questions": [
+      {"question": "SSO の期限「11月末」は 2026年11月で正しいか", "source_slides": [2]}
+    ],
+    "skipped_slides": [
+      {"slide": 1, "reason": "表紙"},
+      {"slide": 5, "reason": "実績の報告で、作業の指示がない"}
+    ],
+    "review_notes": []
+  }
+}

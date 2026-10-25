@@ -1,0 +1,7 @@
+python-pptx>=1.0
+lxml>=5
+pillow>=10
+requests>=2.31
+jsonschema>=4
+# plan_issues.py（Claude API で課題を作る場合）だけ
+anthropic>=2.0

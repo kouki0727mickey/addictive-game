@@ -2,3 +2,6 @@ __pycache__/
 *.pyc
 _site_src/
 _site/
+
+# pptx2jira の作業ディレクトリ（資料の中身を含むのでコミットしない）
+p2j-work/
