@@ -2,10 +2,99 @@
 
 PowerPoint（.pptx）の内容を、4つの段階で Jira の課題にする。Claude Code からは `/pptx-to-jira`（Markdown 化だけなら `/pptx-to-markdown`）で呼び出す。
 
+## 構成図
+
+### 全体の流れ（段階・スクリプト・ファイル）
+
+```mermaid
+flowchart TD
+    PPTX[/"資料.pptx"/]
+
+    S1["<b>① 抽出</b>　extract.py<br>XML から文字・表・グラフ・SmartArt・ノート<br>XY-cut で読む順序／LibreOffice でスライド画像"]
+    F1[("slides.json（文字の正本）<br>images/・renders/・extracted.md")]
+
+    S2["<b>② Markdown 化</b>　vlm_markdown.py<br>vLLM の VLM が順序・図・矢印を補う<br>表・グラフは抽出値を差し込む"]
+    Q2{"機械検査<br>網羅率・数字・図の説明"}
+    F2[("deck.md")]
+
+    S3["<b>③ 課題の計画</b>　prompts/plan_issues.md<br>既定: Claude Code 自身<br>一括/CI: plan_issues.py（Claude API）"]
+    F3[("issues.json<br>課題ごとに資料の引用つき")]
+
+    Q3{"<b>検査</b>　issues_schema.py<br>引用が資料にあるか・循環・期限・ラベル"}
+
+    S4["<b>④ 登録</b>　jira_push.py<br>--offline → 事前確認 → --apply"]
+    U(["ユーザーの了承"])
+    JIRA[("Jira<br>Cloud v3 / Data Center v2")]
+    F4[("jira_state.json<br>二重登録の防止")]
+
+    PPTX --> S1 --> F1 --> S2 --> Q2
+    Q2 -- 合格 --> F2
+    Q2 -- "不合格 → 1回やり直し<br>それでも駄目なら抽出結果" --> F2
+    F1 -. "vLLM がないとき extracted.md" .-> F2
+    F2 --> S3 --> F3 --> Q3
+    Q3 -- エラーあり：直す --> F3
+    Q3 -- エラー 0 --> S4 --> U --> JIRA
+    S4 <--> F4
 ```
-.pptx ──①抽出──▶ slides.json / images/ / renders/ ──②vLLM──▶ deck.md ──③Claude──▶ issues.json ──検査──▶ ④Jira
-          extract.py                              vlm_markdown.py        plan_issues.py      issues_schema.py   jira_push.py
-                                                                       （既定は Claude Code 自身）
+
+### ② Markdown 化: 1 枚のスライドの処理
+
+```mermaid
+flowchart TD
+    A["スライド（slides.json）"] --> B{"送る画像がある？"}
+    B -- ない --> T["抽出結果をそのまま使う<br>status: text_only"]
+    B -- ある --> C["VLM に送る<br>原文 JSON + スライド画像 + 埋め込み画像"]
+    C --> D["後処理<br>&lt;think&gt;・フェンス除去<br>{{TABLE-n}} に抽出した表を差し込む"]
+    D --> E{"検査<br>・原文の網羅率 ≥ 0.95<br>・原文にない数字がない<br>・画像ごとに「図（IMG-n）」の説明"}
+    E -- 合格 --> OK["採用<br>status: vlm / vlm_retry"]
+    E -- 不合格・1回目 --> R["抜け・作られた数字・<br>説明のない画像を示して<br>やり直させる"] --> D
+    E -- 不合格・やり直し後も --> F["抽出結果の本文 + VLM の図の説明<br>status: fallback"]
+    C -. 呼び出し失敗 .-> G["抽出結果<br>status: error_fallback"]
+```
+
+### ③〜④ 課題の計画から登録まで
+
+```mermaid
+flowchart TD
+    D["deck.md"] --> P["課題の計画<br>エピック → 課題（story/task/bug）→ サブタスク<br>依存・未解決の問い・除外したスライド"]
+    P --> L{"検査 issues_schema.py"}
+    L -- "エラー<br>根拠の引用が資料にない・循環依存<br>出典がない・ラベル不正 など" --> FIX["issues.json を直す<br>（--fix で自動の直しも）"] --> L
+    L -- "警告<br>取りこぼし・期限や担当が資料に見当たらない<br>数字の書き換え・重複" --> H["人が判断"]
+    L -- OK --> PF["事前確認<br>serverInfo で版を判定<br>課題タイプを名前→階層で対応づけ<br>createmeta で必須項目を確認"]
+    H --> PF
+    PF --> U(["ユーザーが一覧を見て了承"])
+    U --> O["作成の順序<br>① エピック ② 課題 ③ サブタスク ④ Blocks リンク"]
+    O --> K{"jira_state.json か<br>ラベル p2j-ハッシュ で<br>既に作った？"}
+    K -- はい --> SKIP["作らない（二重登録の防止）"]
+    K -- いいえ --> POST["POST /issue<br>説明: Cloud は ADF / DC は Wiki 記法<br>親: Cloud は parent / DC は Epic Link"]
+    POST --> SAVE["1件ごとに状態を保存<br>（途中で止まっても続きから）"]
+```
+
+### ファイル構成
+
+```mermaid
+flowchart LR
+    subgraph SK[".claude/skills/"]
+        SK1["pptx-to-jira/SKILL.md<br>手順 0〜6（全体）"]
+        SK2["pptx-to-markdown/SKILL.md<br>手順 0〜2（Markdown まで）"]
+    end
+    subgraph T["tools/pptx2jira/"]
+        E["extract.py ①"]
+        V["vlm_markdown.py ②"]
+        PI["plan_issues.py ③"]
+        PM["prompts/plan_issues.md ③"]
+        IS["issues_schema.py<br>スキーマ・検査"]
+        JP["jira_push.py ④"]
+        MC["md_convert.py<br>Markdown → ADF / Wiki"]
+        CM["common.py<br>網羅率・数字の検査"]
+        TS["tests/<br>サンプル pptx・偽 vLLM/Jira・45 件"]
+    end
+    SK1 --> E & V & PM & IS & JP
+    SK2 --> E & V
+    V --> CM
+    IS --> CM
+    PI --> PM & IS
+    JP --> IS & MC
 ```
 
 設計の検討と、各段階 3 回ずつのレビューの記録は [`REVIEW.md`](REVIEW.md)。
