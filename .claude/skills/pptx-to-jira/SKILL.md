@@ -5,7 +5,7 @@ description: PowerPoint（.pptx）の内容を、テキスト・画像の抽出 
 
 # PowerPoint から Jira 課題を作る
 
-道具は `tools/pptx2jira/`（説明は同じ場所の `README.md`、設計の検討とレビューの記録は `REVIEW.md`）。
+道具は `tools/pptx2jira/`（説明は同じ場所の `README.md`、各段階の中身の動きは `HOW_IT_WORKS.md`、設計の検討とレビューの記録は `REVIEW.md`）。
 このリポジトリにない場合は `git clone --depth 1 https://github.com/kouki0727mickey/addictive-game /tmp/ai-ent-kb` して `/tmp/ai-ent-kb/tools/pptx2jira/` を使う。
 以下 `T=tools/pptx2jira`、作業ディレクトリ `W=p2j-work/<資料名>`（`.gitignore` 済み。資料の中身をコミットしない）。
 

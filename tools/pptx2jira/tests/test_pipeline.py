@@ -120,6 +120,7 @@ class TestExtract(unittest.TestCase):
         self.assertEqual(content[0]["alt"], "新しいシステム構成図")
         logo = [b for b in imgs if b["decorative"]]
         self.assertEqual(len(logo), 1, "全スライドに出るロゴは装飾扱い")
+        self.assertIsNone(logo[0]["alt"], "ファイル名だけの代替テキストは捨てる")
 
     def test_render_matches_slides(self):
         if not shutil.which("soffice") or os.environ.get("P2J_TEST_RENDER", "1") != "1":

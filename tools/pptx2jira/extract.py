@@ -330,6 +330,15 @@ def smartart_block(shape) -> dict | None:
 # ---------------------------------------------------------------- 画像
 
 
+_FILENAME_ALT = re.compile(r"^[\w.\- ]+\.(png|jpe?g|gif|bmp|tiff?|emf|wmf|svg|webp)$", re.I)
+
+
+def _meaningful_alt(alt: str) -> str | None:
+    """代替テキスト。ファイル名が自動で入っただけのもの（image.png など）は意味がないので捨てる。"""
+    alt = alt.strip()
+    return None if not alt or _FILENAME_ALT.match(alt) else alt
+
+
 def save_image(shape, images_dir: Path, sw: int, sh: int) -> dict | None:
     try:
         image = shape.image
@@ -358,7 +367,7 @@ def save_image(shape, images_dir: Path, sw: int, sh: int) -> dict | None:
         "file": f"images/{name}",
         "hash": digest,
         "format": ext,
-        "alt": (alt[0].strip() if alt else "") or None,
+        "alt": _meaningful_alt(alt[0] if alt else ""),
         "width_px": width_px,
         "height_px": height_px,
         "area_ratio": round(area, 4),

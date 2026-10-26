@@ -97,7 +97,7 @@ flowchart LR
     JP --> IS & MC
 ```
 
-設計の検討と、各段階 3 回ずつのレビューの記録は [`REVIEW.md`](REVIEW.md)。
+中身の動き（各段階の処理の順番と、実際の入出力の例）は [`HOW_IT_WORKS.md`](HOW_IT_WORKS.md)。設計の検討と、各段階 3 回ずつのレビューの記録は [`REVIEW.md`](REVIEW.md)。
 
 ## 精度の考え方
 
